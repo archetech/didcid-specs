@@ -19,7 +19,7 @@ project; this repository specifies the protocol and contains no application code
 | `markdown/` | The specification itself, one file per major section |
 | `specs.json` | Spec-Up config — **section order**, title, external spec links |
 | `render.js` | Three-line wrapper that invokes spec-up |
-| `.github/workflows/pages.yml` | Renders and publishes to GitHub Pages on push to `main` |
+| `.github/workflows/pages.yml` | Renders on every PR; publishes to GitHub Pages on push to `main` |
 | `.github/scripts/check-refs.js` | Fails CI on a `[[ref:]]` with no matching `[[def:]]` |
 | `build/` | Render output (gitignored — never commit or hand-edit) |
 
@@ -48,7 +48,9 @@ Two independent surfaces, and they can drift:
 
 - **GitHub Pages** — <https://archetech.com/didcid-specs/>. Updated automatically by
   `.github/workflows/pages.yml` on every push to `main` (i.e. every PR merge), and manually via
-  *Actions → Publish spec to GitHub Pages → Run workflow*.
+  *Actions → Render and publish spec → Run workflow*. The same workflow renders every pull request
+  and runs the reference check on it, but skips the deploy job — so a broken `[[ref:]]` fails review
+  rather than the post-merge publish.
 - **archon.technology** — <https://archon.technology/specs>. Updated only by running `npm run render`
   on the hosting checkout, as described above. A merge to `main` does **not** update it.
 
