@@ -1,7 +1,11 @@
-name: Publish spec to GitHub Pages
+name: Render and publish spec
 
 on:
   push:
+    branches: [main]
+  # Render on PRs too, so a broken [[ref:]] fails review rather than the
+  # post-merge deploy. The deploy job is skipped for these runs.
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -11,10 +15,11 @@ permissions:
   pages: write
   id-token: write
 
-# One deploy at a time; don't cancel a run that is mid-publish.
+# One deploy at a time on main, and never cancel a run that is mid-publish.
+# PR runs group per-ref instead, so a new push supersedes its own stale run.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -48,6 +53,8 @@ jobs:
 
   deploy:
     needs: build
+    # Publish only from main; PR runs stop after the render and reference check.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

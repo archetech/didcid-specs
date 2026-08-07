@@ -1,18 +1,20 @@
 ## Archon Extensions to DID Core
 
-The `did:cid` method introduces three structural elements that extend the [[ref: DID-CORE]] data model. These extensions are not part of the base DID specification; they are Archon-defined additions that enable the method's key design goals: subject type distinction, pluggable registry anchoring, and an open application data layer.
+The `did:cid` method defines three structural elements that extend the [[ref: DID-CORE]] data model: `didDocumentRegistration`, the agent/asset subject type distinction, and `didDocumentData`. Together they enable the method's key design goals — pluggable registry anchoring, a verifiable ownership graph, and an open application data layer.
+
+These extensions are **normative for `did:cid`**: conforming implementations MUST produce and interpret them as specified in this section. They are not, however, part of the [[ref: DID-CORE]] data model, and this method therefore does not place them in the DID document. Each is exposed instead as a resource *dereferenced* from a DID URL — `did:cid:<cid>/registration` and `did:cid:<cid>/data` (see DID URL Dereferencing). That separation is deliberate: it is what allows a `did:cid` resolution result to remain conformant with [[ref: DID-CORE]] while these elements stay binding on implementations.
 
 ::: note
-Because they are method-specific, `didDocumentData` and `didDocumentRegistration` are **not** members of the DID resolution result (the `didDocument` / `didResolutionMetadata` / `didDocumentMetadata` triple). Each is retrieved by *dereferencing* the corresponding DID URL — `did:cid:<cid>/data` and `did:cid:<cid>/registration` (see DID URL Dereferencing).
+Because they are dereferenced resources, `didDocumentRegistration` and `didDocumentData` are **not** members of the DID resolution result (the `didDocument` / `didResolutionMetadata` / `didDocumentMetadata` triple), and MUST NOT be returned inline within it.
 :::
 
 ---
 
 ### `didDocumentRegistration`
 
-[[def: didDocumentRegistration, An Archon extension to the DID document set that records the protocol version, DID subject type, and chosen registry for a DID — metadata required to correctly interpret and resolve the DID]]
+[[def: didDocumentRegistration, A method-defined resource, dereferenced at the /registration DID URL, that records the protocol version, DID subject type, and chosen registry for a DID — metadata required to correctly interpret and resolve the DID]]
 
-[[ref: DID-CORE]] defines no mechanism for a DID method to attach method-specific configuration to a DID document. The `did:cid` method adds a `didDocumentRegistration` object to the document set for this purpose. It is present on every `did:cid` DID and is populated at creation time:
+[[ref: DID-CORE]] defines no mechanism for a DID method to attach method-specific configuration to a DID. The `did:cid` method defines a `didDocumentRegistration` object for this purpose. Every `did:cid` DID MUST have one; it is populated at creation time and cannot be absent:
 
 ```json
 {
@@ -54,16 +56,16 @@ Most DID methods treat all DIDs identically — every DID is a self-controlled, 
 This distinction enables a verifiable ownership graph: any observer can resolve an asset DID and determine its current controller, then resolve the controller to verify the controlling agent's current key state. Transfers are recorded in the [[ref: operation chain]] and resolvable at any historical point in time.
 
 ::: note
-The agent/asset distinction is expressed in `didDocumentRegistration.type`. Resolvers use this field to apply the correct creation, update, and resolution rules for the DID.
+The agent/asset distinction is expressed in `didDocumentRegistration.type`. Resolvers MUST use this field to apply the correct creation, update, and resolution rules for the DID.
 :::
 
 ---
 
 ### `didDocumentData`
 
-[[def: didDocumentData, An Archon extension to the DID document set that provides an open, structured application data layer — a JSON object in which Keymaster features and higher-level applications store state that must be associated with the DID and synchronized across the network]]
+[[def: didDocumentData, A method-defined resource, dereferenced at the /data DID URL, that provides an open, structured application data layer — a JSON object in which Keymaster features and higher-level applications store state that must be associated with the DID and synchronized across the network]]
 
-[[ref: DID-CORE]] defines a `service` property for attaching typed service endpoint references to a DID document — external URIs pointing to services associated with the DID subject. `didDocumentData` serves a distinct purpose: it is an inline structured data store for arbitrary JSON state that must be cryptographically bound to the DID itself, versioned alongside it, and resolvable at any point in its history. The `did:cid` method adds `didDocumentData` to the document set as an open extension point. Its content is not constrained by the method specification — any Keymaster feature or application layer can read and write properties within it using standard DID update operations.
+[[ref: DID-CORE]] defines a `service` property for attaching typed service endpoint references to a DID document — external URIs pointing to services associated with the DID subject. `didDocumentData` serves a distinct purpose: it is a structured data store for arbitrary JSON state that must be cryptographically bound to the DID itself, versioned alongside it, and resolvable at any point in its history. The `did:cid` method defines `didDocumentData` as an open extension point, dereferenced at `/data`. Its content is not constrained by the method specification — any Keymaster feature or application layer can read and write properties within it using standard DID update operations.
 
 The general pattern is that each higher-level feature reserves a named property within `didDocumentData`:
 
