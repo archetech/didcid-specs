@@ -89,10 +89,14 @@ Two independent surfaces, and they can drift:
   on this distinction.
 - **Resolved documents are computed, not stored.** Resolution replays the operation chain; temporal
   resolution replays it to a past point. The DID document is never something "fetched".
-- **Archon extensions are non-normative w.r.t. DID Core.** `didDocumentRegistration`,
-  `didDocumentData`, and the agent/asset distinction are additions to the DID Core data model,
-  documented in `archon-extensions.md`, and must stay clearly marked as such — this document targets
-  W3C DID method registration.
+- **Archon extensions are normative, and live outside the resolution result.**
+  `didDocumentRegistration`, `didDocumentData`, and the agent/asset distinction are method-defined
+  additions to the DID Core data model, documented in `archon-extensions.md`. They are *not* members
+  of the DID resolution result (the `didDocument` / `didResolutionMetadata` / `didDocumentMetadata`
+  triple); each is retrieved by dereferencing a DID URL — `/registration` and `/data` — which this
+  method specifies normatively, per `dereferencing.md`. That separation is what keeps the resolution
+  result conformant while the extensions remain binding on implementations, and it matters because
+  this document targets W3C DID method registration.
 - **Resolution ≠ dereferencing.** Resolution returns the document and its metadata; dereferencing
   returns a resource at a DID URL path (`/data`, `/registration`). Fragments resolve client-side.
 
