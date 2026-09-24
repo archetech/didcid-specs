@@ -72,4 +72,23 @@ This is sibling preference, not a global CID sort; predecessors still precede su
 
 Imported candidates, including currently rejected and displaced branches, are retained separately from accepted histories. Changes to controller history or anchor evidence MUST reconsider dependent histories and deferred predecessors. Removing controller evidence also revalidates dependents. Startup reconstructs accepted state before serving history reads. Accepted-history exports alone do not preserve every candidate or retrieval alias required for reconstruction.
 
-`confirmed` records expected-registry anchoring; it does not prove all controller history is available or authorization is irrevocable. Nodes compute their best state from available evidence. Agreement requires the same retained evidence, protocol rules, and interpretation of trusted registry data. Archon's Lean convergence models and signed cross-port bridges support these rules under their documented assumptions; finite bridge tests are not a universal proof that all executable code implements the model.
+`confirmed` records expected-registry anchoring; it does not prove all controller history is available or authorization is irrevocable. Nodes compute their best state from available evidence. Agreement requires the same retained evidence, protocol rules, and interpretation of trusted registry data.
+
+
+### Formally Proved Properties
+
+Archon's Lean proofs establish these major behaviors of the protocol model:
+
+- **Convergence:** The same retained operations and chain evidence produce the same accepted histories and semantic DID states, regardless of arrival order or duplicates.
+- **Termination:** Modeled reconciliation finishes at a stable result, including reconstruction from stale published histories.
+- **Deterministic fork selection:** Competing operations and repeated anchors follow the canonical-CID and chain-position rules, including authorization at the selected anchor.
+- **Agent authorization:** Updates follow predecessor keys and named verification methods, including key rotation and deletion.
+- **Asset authorization:** Ownership, transfers, and updates use the appropriate historical controller state.
+- **Registry migration:** The old registry confirms a migration; the new registry governs its successors.
+- **Document transitions:** Whole-component replacement, omitted-component preservation, and deletion produce consistent final state.
+
+These results apply to the protocol model under its documented assumptions: finite retained evidence, the same complete canonical operations and normalized predecessor references, the same protocol configuration, and an authoritative chain snapshot satisfying the receipt contracts. Semantic equality includes accepted operation paths, document/data/registration values, deactivation, and the receipt facts used for historical authorization; it is not byte-for-byte equality of every API response.
+
+Signed TypeScript/Rust correspondence tests connect the model to Archon's implementations. They do not constitute a universal proof of the executable code, cryptographic primitives, storage/concurrency behavior, or network delivery. The result does not promise agreement between nodes retaining different evidence; if evidence eventually settles to the same set, modeled reconciliation reaches the same result.
+
+See the [exact theorem claim and assumptions](https://github.com/archetech/archon/blob/bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc/docs/plans/protocol-convergence-theorem.md) and the [completed proof roadmap](https://github.com/archetech/archon/blob/bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc/docs/plans/protocol-convergence-completion.md).
