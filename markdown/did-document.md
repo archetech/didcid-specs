@@ -17,7 +17,7 @@ A `did:cid` resolution returns the three members defined by the [[ref: DID-CORE]
 The method-specific `didDocumentData` and `didDocumentRegistration` objects are **not** part of the resolution result. They are Archon extensions (described in the Archon Extensions to DID Core section), retrieved separately as dereferenceable resources at the `/data` and `/registration` DID URLs (see DID URL Dereferencing). The examples in the subsections below show the resolution result for each DID type, as returned by `GET /1.0/identifiers/<did>`.
 
 ::: note
-The [[ref: operation chain]] is the authoritative source of truth for a `did:cid` DID. The Gatekeeper stores individual operations (create, update, delete) and reconstructs the DID document by replaying them in [[ref: ordinal key]] order at resolution time. Implementations MAY cache resolved documents for performance, but any cached result MUST remain consistent with a fresh replay of the canonical operation chain.
+The [[ref: operation chain]] is the authoritative source of truth for a `did:cid` DID. The Gatekeeper stores individual operations (create, update, delete) and reconstructs the DID document by selecting and replaying predecessor-linked histories under Protocol Rules, including [[ref: ordinal key]] and canonical-CID sibling preference. Implementations MAY cache resolved documents for performance, but any cached result MUST remain consistent with a fresh replay of the canonical operation chain.
 :::
 
 ---
@@ -29,30 +29,39 @@ A resolved [[ref: agent]] DID document includes a verification method and the st
 ```json
 {
   "didDocument": {
-    "@context": ["https://www.w3.org/ns/did/v1"],
-    "id": "did:cid:bafkreig6rjxbv2aopv47dgxhnxepqpb4yrxf2nvzrhmhdqthojfdxuxjbe",
+    "@context": [
+      "https://www.w3.org/ns/did/v1"
+    ],
+    "id": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
     "verificationMethod": [
       {
         "id": "#key-1",
-        "controller": "did:cid:bafkreig6rjxbv2aopv47dgxhnxepqpb4yrxf2nvzrhmhdqthojfdxuxjbe",
+        "controller": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
         "type": "EcdsaSecp256k1VerificationKey2019",
         "publicKeyJwk": {
           "kty": "EC",
           "crv": "secp256k1",
-          "x": "LRrQabMIkvGVTA2IRk0JdWCpu57MNGm89nugrBZHo24",
-          "y": "KHsWAaidAIGCosDjRYDIk-94793e4xVEL4UwFxjWgB8"
+          "x": "OSd_CMNPrDPDsV5YoWajZol2ZUGeXD8hR3XubkcWcX4",
+          "y": "yBLNwQllxyR5Omgo9b7LmJEfd1pGNiZZqzgqafZ4Qcs"
         }
       }
     ],
-    "authentication": ["#key-1"],
-    "assertionMethod": ["#key-1"]
+    "authentication": [
+      "#key-1"
+    ],
+    "assertionMethod": [
+      "#key-1"
+    ],
+    "capabilityInvocation": [
+      "#key-1"
+    ]
   },
   "didResolutionMetadata": {
     "contentType": "application/did+ld+json"
   },
   "didDocumentMetadata": {
-    "created": "2026-01-14T19:29:06Z",
-    "versionId": "bafkreig6rjxbv2aopv47dgxhnxepqpb4yrxf2nvzrhmhdqthojfdxuxjbe",
+    "created": "2026-09-22T00:00:00Z",
+    "versionId": "bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
     "versionSequence": "1"
   }
 }
@@ -64,10 +73,11 @@ A resolved [[ref: agent]] DID document includes a verification method and the st
 
 | Relationship | Purpose |
 |---|---|
+| `capabilityInvocation` | Expresses permission to sign DID operations; current version-1 verification still checks named-method membership only |
 | `authentication` | Proves control of the DID — used when the agent must authenticate itself to a verifier |
 | `assertionMethod` | Signs verifiable credentials and other assertions |
 
-The initial verification method is referenced as `#key-1`. After key rotation via an update operation, the new method identifier increments (`#key-2`, `#key-3`, etc.) and both `authentication` and `assertionMethod` are updated to reference the new key. Historical keys remain resolvable via [[ref: temporal resolution]].
+The initial verification method is referenced as `#key-1`. After key rotation via an update operation, the new method identifier increments (`#key-2`, `#key-3`, etc.) and the client updates relationships that refer to the rotated key, including `capabilityInvocation`. This incrementing name is a client convention, not a protocol requirement; a method name may be retained while its key changes. Historical keys remain resolvable via [[ref: temporal resolution]].
 
 #### Authentication
 
@@ -97,7 +107,7 @@ Service endpoints are optional. Any DID Core-conformant service type may be used
 
 ### Asset DID Document
 
-A resolved [[ref: asset]] DID document identifies its controlling agent and has no verification methods of its own. Its application data is not part of the resolution result — it is dereferenced separately at `/data` (shown below):
+A resolved [[ref: asset]] DID document identifies its controlling agent. That agent authorizes its updates, transfers, and deletion. Its application data is not part of the resolution result — it is dereferenced separately at `/data` (shown below):
 
 ```json
 {

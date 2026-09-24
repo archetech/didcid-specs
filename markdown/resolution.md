@@ -4,7 +4,7 @@
 
 Resolution is the operation of returning a DID Document and its metadata for a given DID. It is distinct from *dereferencing*, which returns a resource identified by a DID URL (see DID URL Dereferencing).
 
-Given a DID and an optional resolution time, the resolver retrieves the associated [[ref: seed document]] from IPFS using the DID suffix as the CID, parsing it as plaintext JSON.
+Given a DID and an optional resolution time, the resolver uses its locally retained operation history and [[ref: seed document]], ordinarily received through Hyperswarm gossip. When creation content is missing locally, it retrieves that content from IPFS using the DID suffix as the CID. Retrieved content is parsed and validated before use; the retrieval channel does not establish authorization.
 
 ### Resolution Options
 
@@ -14,58 +14,26 @@ The `did:cid` method supports the following resolution options per [[ref: DID-CO
 |--------|------|-------------|
 | `versionTime` | ISO 8601 datetime | Resolve the DID document as it existed at or before this point in time |
 | `versionSequence` | integer | Resolve at a specific operation sequence number (1-indexed from creation) |
-| `versionId` | CID string | Resolve at the operation identified by this specific CID |
 
 If no option is specified, the resolver returns the most recent confirmed version.
 
-::: note
-`versionId` accepts the CID of any operation in the DID's [[ref: operation chain]], enabling pinpoint resolution at any historical state. This is the most precise resolution mode — `versionTime` and `versionSequence` both reduce to a `versionId` lookup internally once the target operation is identified.
-:::
+`versionId` is returned as document metadata identifying the selected operation; it is not an input selector on this surface.
 
 ---
 
 ### Resolution Algorithm
 
-```mermaid
-graph TD
-    A["Input: DID, versionTime"] --> B["Extract CID suffix from DID"]
-    B --> C{"Retrieve seed from IPFS?"}
-    C -->|Failure| D["Forward to trusted fallback node"]
-    C -->|Success| E{"Valid seed document?"}
-    E -->|No| F["Return error"]
-    E -->|Yes| G{"Known subject type?"}
-    G -->|No| F
-    G -->|Yes| H{"Registry supported?"}
-    H -->|No| I["Forward to trusted registry node"]
-    H -->|Yes| J["Generate initial document from seed"]
-    J --> K["Retrieve update operations from registry"]
-    K --> L{"For each update lte versionTime"}
-    L -->|Proof valid| M["Apply update to document"]
-    L -->|Invalid| N["Skip update"]
-    M --> O["Return resolved DID document"]
-    N --> O
-```
+Resolution computes a predecessor-linked accepted history from available evidence under Protocol Rules. It MUST NOT select branches by receipt arrival order or merely sort all operations by time. Missing controller history can change authorization when it arrives.
 
-### Pseudocode
+Conceptually, a resolver:
 
-```
-function resolveDid(did, versionTime=now):
-    get suffix from did
-    use suffix as CID to retrieve seed document from IPFS
-    if fail to retrieve the seed document:
-        forward request to a trusted node
-        return
-    look up did's registry in its seed document
-    if did's registry is not supported by this node:
-        forward request to a trusted node
-        return
-    generate initial document from seed
-    retrieve all update operations from did's registry
-    for all updates until versionTime:
-        if proof is valid and update is valid:
-            apply update to DID document
-    return DID document
-```
+1. Uses the locally retained content-addressed creation operation, falling back to IPFS if unavailable locally, and validates it.
+2. Incorporates locally trusted registry evidence and unconfirmed hints, validating their targets and receipt shapes.
+3. Reconstructs self-controlled agent histories, selecting valid competing successors; then revalidates asset histories against their agents. Deferred predecessors and changed authority are reconsidered until the accepted state settles.
+4. Applies the requested version/time bound to the predecessor-linked history without skipping excluded predecessors. Hyperswarm and pin use intrinsic proof time; local creation uses operation `created` and local mutations use `proof.created`; chain receipts retain chain time and position.
+5. For this specification's conformant HTTP surface, returns the confirmed, verified projection as the DID Core result, exposing data and registration separately by dereferencing.
+
+A cached projection MUST be consistent with replay of the same retained evidence. Local registry support controls submission and queueing, not whether retained evidence can be resolved. The conformant HTTP surface does not delegate resolution to peers.
 
 ### Resolution Result
 
@@ -120,12 +88,12 @@ This surface always returns confirmed, cryptographically verified state.
 
 ### Fallback and Forwarding
 
-If a node cannot fulfill a resolution request — either because the seed document is unreachable on IPFS or because the DID's specified registry is not supported — the node must forward the request to a trusted node. The forwarding chain is:
+The conformant `/1.0/identifiers` surface resolves from the node's available state and content retrieval; it MUST NOT delegate resolution to a universal-resolver fallback or a confirmed-Gatekeeper peer. If it cannot resolve the DID, it returns the appropriate resolution error. An unsupported local registry alone does not require delegation or prevent resolution of retained evidence.
 
-1. **Registry not supported** → forward to a trusted node that monitors the specified registry.
-1. **No trusted node for registry** → forward to a general-purpose fallback node.
-1. **IPFS seed unreachable** → forward to a node with broader IPFS connectivity.
+Archon's separate `/api/v1/did/:did` endpoint has configurable HTTP fallback behavior. Confirmed-peer fallback applies when confirmed resolution is requested and local history is missing, or the unconfirmed view extends beyond the confirmed prefix under the same bounds. Eligible peer results must match the DID, respect those bounds, and advance existing confirmed state. This proxy behavior does not import events or change core resolution semantics. It is not a required forwarding chain for the DID method.
 
 ### Ordinal Key Ordering
 
-Update records from the registry are ordered by an [[def: ordinal key, A tuple of values used to sort update operations into chronological order, specific to the registry type — e.g., `{block index, transaction index, batch index}` for BTC]]. This ensures deterministic resolution regardless of node synchronization timing.
+[[def: ordinal key, A registry-local chain position tuple ordered lexicographically as height then transaction or instruction index then any additional registry position components then operation index within the anchored batch]]
+
+Ordinals order valid confirmations on the predecessor's expected chain registry. Equal positions of distinct competing operations use canonical CID as a tie-breaker. Unanchored siblings use canonical CID alone. These rules and the required receipt fields are specified in Protocol Rules; ordinals alone do not establish convergence or compare positions across registries.

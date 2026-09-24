@@ -12,6 +12,7 @@
         "did-format.md",
         "did-document.md",
         "lifecycle.md",
+        "protocol-rules.md",
         "creation.md",
         "update.md",
         "revocation.md",

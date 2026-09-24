@@ -4,13 +4,13 @@ This section addresses the privacy implications of the `did:cid` method in accor
 
 ---
 
-### IPFS Permanence
+### Distribution and Retention
 
-The creation operation for every `did:cid` DID is stored on IPFS as a content-addressed object. This has fundamental privacy implications:
+Non-local creation operations and subsequent changes are distributed through Hyperswarm gossip. Peers retain copies; IPFS provides an additional retrieval path. This has fundamental privacy implications:
 
-- **Permanent record**: Once pinned, the creation operation — including the DID's initial public key and registration metadata — is permanently accessible to any party with IPFS access.
-- **No practical erasure**: Content addressing makes deletion impossible. Unpinning reduces availability but does not remove cached copies from other nodes that have retrieved the content.
-- **Public by design**: DID creation is an intentionally public act. Controllers should understand that creating a `did:cid` DID results in a permanent, globally accessible record.
+- **Potentially lasting disclosure**: Once distributed, an operation may be retained indefinitely by peers or other recipients. Neither gossip nor IPFS guarantees permanent availability.
+- **No guaranteed erasure**: Removing a local record or unpinning IPFS content cannot remove copies held by other parties. Content addressing detects changed content; it does not itself prevent every copy from being deleted.
+- **Public distribution**: Treat non-local operations as public once shared. Local-only DIDs are not queued for gossip, but local handling is not an encryption mechanism or a guarantee against disclosure through other storage or service access.
 
 Implementations MUST NOT include sensitive personal data in the creation operation beyond what is required for DID function (the public key and registration metadata).
 
@@ -75,7 +75,7 @@ Real-world identity is associated with a DID only when the controller explicitly
 
 **DID-level correlation**: All activity signed with the same DID is attributable to the same controller by any observer who knows the DID. Controllers who wish to limit correlation across contexts SHOULD use separate DIDs for separate relationships or roles.
 
-**Public key correlation**: The public key embedded in a `did:cid` creation operation is visible to IPFS participants from the moment of creation. Reuse of the same cryptographic key material across multiple DIDs — which is not recommended — would enable correlation across those DIDs even if they are otherwise unrelated.
+**Public key correlation**: The public key embedded in a `did:cid` creation operation is visible to recipients when the operation is distributed, including gossip peers and parties retrieving it through IPFS. Reuse of the same cryptographic key material across multiple DIDs — which is not recommended — would enable correlation across those DIDs even if they are otherwise unrelated.
 
 **Registry transaction patterns**: Update operations recorded on public blockchains are permanently and publicly associated with the DID. The timing, frequency, and size of updates may reveal behavioral patterns even when the content of operations is not sensitive.
 
