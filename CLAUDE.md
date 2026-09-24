@@ -79,3 +79,5 @@ The commit history shows this spec is actively revised against external review (
 - Describe assets through their owning agent’s authority. Do not elevate incidental accepted data, such as published keys, into a separate asset feature or imply a blanket prohibition on that content.
 
 - Avoid calling creation “local” when explaining permissionless signing and hashing; `local` is also a registry. Explicitly include creation operations in gossip distribution and state the `local` registry exception separately.
+
+- Scope normative version rules to the version this specification defines; avoid unqualified claims that implementations accept only that version.

@@ -12,7 +12,7 @@ The operation ID is the CIDv1 lowercase-base32 identifier of the complete signed
 
 A retrieval CID may refer to noncanonical JSON encoding of the same operation. Implementations derive the canonical operation ID from fetched content and retain the reference as a content-backed alias. A known alias may satisfy an existing signed `previd`; neither the signed predecessor bytes nor the operation may be rewritten. Peer-claimed IDs alone MUST NOT establish aliases. The historical TypeScript numeric-key serialization reference is also derived from known content for predecessor compatibility; this does not change new canonical IDs. Unknown references remain unresolved.
 
-Only registration version `1` is accepted. Registration requires `type` equal to `agent` or `asset`, and a registry name of 1–128 characters matching `[A-Za-z0-9][A-Za-z0-9:_-]*`. Registry validation is name-shape validation, not a closed list of supported chains. Local submission/queue support is a separate node capability.
+This specification defines registration version `1`. Operations governed by this version MUST use `registration.version: 1`. Registration requires `type` equal to `agent` or `asset`, and a registry name of 1–128 characters matching `[A-Za-z0-9][A-Za-z0-9:_-]*`. Registry validation is name-shape validation, not a closed list of supported chains. Local submission/queue support is a separate node capability.
 
 Version 1 retains the maximum operation size of 65,536 UTF-16 code units in compact JSON serialization; it is not a 65,536 UTF-8 byte limit. Optional undefined object members in SDK inputs serialize as omitted JSON members; this does not make explicit null a valid registration or document replacement.
 
