@@ -59,7 +59,7 @@ The integrity of DID update history depends on the [[ref: registry]] selected by
 The `registry` field may be changed by the controller via a valid signed update operation — the predecessor registry confirms the migration and the resulting registry confirms successors. A registry change does not invalidate operations previously recorded on the prior registry; those remain part of the verifiable [[ref: operation chain]] and are still consulted during historical resolution. Resolvers MUST follow the current registry for new operations and MUST consult prior registries when replaying the operation history up to any point before the registry change.
 
 ::: note
-Node operators SHOULD document the registries they support and their trusted peer node policies. Resolvers that do not support a DID's specified registry MUST forward the resolution request to a trusted node rather than returning a partial or stale result.
+Node operators SHOULD document the registries they support and their trusted peer node policies. An unsupported local registry does not itself require forwarding. The conformant resolution surface does not delegate to peers; optional fallback on Archon's separate API is described in Fallback and Forwarding.
 :::
 
 ---
@@ -96,9 +96,9 @@ Clients SHOULD:
 
 ### Proof Verification Requirements
 
-The `did:cid` method **requires** the `proof.created` field in all signed objects. While the W3C Data Integrity specification treats `proof.created` as optional, `did:cid` mandates it because [[ref: temporal resolution]] requires a creation timestamp to determine which historical key state to use for verification.
+Credential proofs require `proof.created` to select historical signer state and preserve verification across key rotation. Credential verifiers use that claimed time, not the current time; it is not an independently trusted signing-time attestation.
 
-Credential verifiers use the proof's claimed `created` time for historical key selection. DID operations instead follow Operation Authorization, including predecessor and chain-position selection. Resolving at the current time after a key rotation may produce a different active key, causing valid historical proofs to fail verification.
+DID operation proofs also require `created`, but authorization follows Operation Authorization: agent mutations use predecessor keys; asset operations use proof-time or chain-position controller selection as applicable. The timestamp also supplies intrinsic unanchored receipt clocks. Its presence MUST NOT introduce an additional generic credential-time lookup after predecessor or chain-position authority has been selected.
 
 ---
 
@@ -110,7 +110,7 @@ Deletion is terminal on its accepted branch. It does not make that branch immune
 
 ### Node Trust Model
 
-DID resolution may involve forwarding requests to trusted peer nodes when a resolver does not directly support the DID's registry. The following risks apply to this trust model:
+Archon's separate API may proxy eligible resolution requests to configured peers; the conformant `/1.0/identifiers` surface does not. The following risks apply to this trust model:
 
 - **Stale data**: A peer node that lags behind the registry may return outdated DID documents, causing verifiers to use superseded keys.
 - **Malicious forwarding**: A compromised node may return incorrect or fabricated DID data to the requesting client.

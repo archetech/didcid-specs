@@ -15,11 +15,20 @@ The `proof.created` timestamp serves two purposes:
 
 ```
 function verifyProof(object):
-    extract signerDid from proof.verificationMethod
-    resolve signerDid at versionTime = proof.created
-    get publicKey from resolved DID document
-    verify signature using publicKey
-    return valid or invalid
+    proofs = normalize object.proof to an array (absent means empty)
+    unsecured = copy of object with proof removed
+    for proof in proofs:
+        if proof has no verificationMethod or its suite is unsupported:
+            continue
+        extract signerDid from proof.verificationMethod
+        try:
+            doc = resolve signerDid at versionTime = proof.created
+        on resolution failure:
+            continue
+        if the supported suite verifies unsecured and proof against doc,
+           including its named method and applicable proof-purpose checks:
+            return valid
+    return invalid
 ```
 
 This [[ref: temporal resolution]] ensures that a credential issued in 2020 can still be verified in 2030, even if the issuer has rotated keys multiple times since issuance.

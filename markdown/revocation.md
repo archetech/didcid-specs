@@ -41,7 +41,7 @@ Upon receiving the operation, the node must:
 
 ### Post-Revocation Resolution
 
-After revocation is confirmed on the DID's registry, resolving the DID returns the following fields (the operation CID is also returned as `versionId`):
+After revocation is confirmed on the DID's registry, resolving the DID returns the following result:
 
 ```json
 {
@@ -55,7 +55,8 @@ After revocation is confirmed on the DID's registry, resolving the DID returns t
         "created": "2026-09-22T00:00:01Z",
         "deleted": "2026-09-22T00:00:03Z",
         "deactivated": true,
-        "versionSequence": "2"
+        "versionSequence": "2",
+        "versionId": "bagaaierafiknyfexk6badnlvglrmkr57lbijuippd3vp6kql5qtj3i6t267q"
     }
 }
 ```
@@ -64,3 +65,4 @@ The metadata `deactivated` field is set to `true` to conform to the [[ref: DID-C
 
 ::: warning
 No recovery operation can extend a valid deletion. Preserve credentials and references before deleting a DID; later evidence revalidation is not a user recovery mechanism.
+:::
