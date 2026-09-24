@@ -1,6 +1,6 @@
 ## DID Format
 
-[[def: did:cid, A DID method that uses Content Identifier (CID) v1 hashes as the method-specific identifier, derived locally from signed creation operations with pluggable registries for history confirmation and ordering]]
+[[def: did:cid, A DID method that uses Content Identifier (CID) v1 hashes as the method-specific identifier, derived from signed creation operations with pluggable registries for history confirmation and ordering]]
 
 The `did:cid` method conforms to the [[ref: DID-CORE]] generic DID syntax. A `did:cid` DID has the following ABNF:
 

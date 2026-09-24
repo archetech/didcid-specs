@@ -4,7 +4,7 @@ This section specifies version-1 operation acceptance and evidence selection. It
 
 ### Distribution and retrieval
 
-Creation is local: signing and content hashing determine the DID without a registrar or registry transaction. Archon distributes non-local operations and batch assets through Hyperswarm gossip, independently of their chosen registry. Gossip receipt alone does not confer chain confirmation. Nodes use retained operation/history data first, with IPFS as fallback retrieval for missing content. IPFS storage and optional auxiliary pinning support availability; they do not create identity or grant authorization. Local-only DIDs are not queued for gossip.
+A DID is derived by signing and hashing its creation operation, without a registrar or registry transaction. Archon distributes creation, update, and deletion operations—including batch asset operations—through Hyperswarm gossip. Operations for DIDs using the `local` registry are excluded from gossip. Gossip receipt alone does not confer chain confirmation. Nodes use retained operation/history data first, with IPFS as fallback retrieval for missing content. IPFS storage and optional auxiliary pinning support availability; they do not create identity or grant authorization.
 
 ### Identity and admission
 

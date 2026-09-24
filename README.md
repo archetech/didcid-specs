@@ -6,8 +6,8 @@ Source for the **`did:cid` DID Method Specification**, a W3C-style standards doc
 **Published spec:** <https://archetech.com/didcid-specs/>
 
 `did:cid` is a DID method optimized for fast, virtually costless identity creation: a DID is
-created locally without a central registrar or registry transaction. Archon distributes non-local
-operations through Hyperswarm gossip; IPFS provides fallback content retrieval. The chosen
+created without a central registrar or registry transaction. Archon distributes creation, update, and deletion
+operations through Hyperswarm gossip, except for DIDs using the `local` registry; IPFS provides fallback content retrieval. The chosen
 registry (BTC, ETH, hyperswarm, …) determines confirmation and ordering of the operation history. The DID suffix is the CIDv1-base32 of the
 JCS-canonicalized seed document, so identifiers are self-certifying and seeds are immutable by
 construction. The method is implemented in the [Archon](https://github.com/archetech/archon)
@@ -84,9 +84,9 @@ Two independent surfaces, and they can drift:
 
 ## Concepts worth knowing before editing
 
-- **Creation, distribution, and anchoring are distinct.** A DID is derived locally from its signed
-  creation operation. Hyperswarm gossip distributes non-local operations, including those using
-  chain registries; IPFS provides fallback retrieval when content is missing locally. The registry
+- **Creation, distribution, and anchoring are distinct.** A DID is derived from its signed
+  creation operation. Hyperswarm gossip distributes creation, update, and deletion operations, except for
+  DIDs using the `local` registry; IPFS provides fallback retrieval when content is missing locally. The registry
   in the accepted predecessor determines confirmation and ordering, not the distribution channel.
 - **Agent vs. asset.** Agents hold keys and control their own document; assets are
   controlled by exactly one agent. Most rules in `creation.md`, `update.md`, and `resolution.md` fork
