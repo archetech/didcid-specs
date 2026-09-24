@@ -10,12 +10,12 @@ The `did:cid` method is designed to support a P2P identity layer with secure dec
 - [[def: asset, An entity controlled by one agent that authorizes its updates, transfers, and deletion — e.g., verifiable credentials, verifiable presentations, schemas, challenges, and responses]]
 
 ::: note
-The `did:cid` method is optimized for identity creation that is fast (under 10 seconds) and virtually costless, achieved by anchoring to IPFS rather than requiring an on-chain transaction at creation time. On-chain registration is deferred to the update phase, where it secures the mutation history.
+The `did:cid` method is optimized for fast, virtually costless identity creation. A signer creates a DID locally by deriving its identifier from the signed creation operation, without a central registrar or an on-chain transaction. Archon distributes non-local operations through Hyperswarm gossip, with IPFS providing fallback retrieval. Registry anchoring supplies confirmation and ordering separately from content distribution.
 :::
 
 ### Design Goals
 
-1. **Decentralized creation** — DIDs are anchored to IPFS prior to any declaration on a registry, enabling immediate use without on-chain transactions or fees.
+1. **Decentralized creation** — DIDs are derived locally from signed creation operations, enabling use by nodes with the required evidence before registry anchoring.
 2. **Decentralized updates** — DID mutations are registered on a pluggable [[def: registry, A decentralized ledger or database (e.g., BTC, ETH, hyperswarm) used to record DID update operations]] initially specified at creation and changeable by an authorized registry migration, preserving the decentralization requirement across the entire lifecycle.
 3. **Temporal resolution** — DIDs can be resolved at any historical point in time, enabling verification of credentials signed with keys that have since been rotated.
 4. **Agent/Asset duality** — The method explicitly distinguishes between key-bearing [[ref: agent]]s and agent-controlled [[ref: asset]]s, reflecting the natural authority hierarchy in credential ecosystems.

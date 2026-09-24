@@ -1,8 +1,8 @@
 ## DID Creation
 
-[[def: create operation, The initial operation that anchors a new DID to IPFS, producing the CID that becomes the DID suffix]]
+[[def: create operation, The signed initial operation whose canonical content determines the CID used as the DID suffix]]
 
-DIDs are anchored to IPFS prior to any declaration on a registry. This allows DIDs to be created very quickly (less than 10 seconds) and at (virtually) no cost.
+A DID is derived locally from its signed creation operation without a registrar or registry transaction. Archon distributes non-local operations primarily through Hyperswarm gossip; IPFS provides fallback retrieval. Registry confirmation is separate from creation and distribution.
 
 The `did:cid` method supports two main types of DID Subject: [[ref: agent]] and [[ref: asset]]. Agents have keys and control assets. Assets are controlled by a single agent (the owner of the asset), which authorizes their updates, transfers, and deletion. Agents cannot delegate control to another DID. The two types have slightly different creation methods.
 
@@ -62,7 +62,7 @@ Upon receiving the operation, the node must:
 
 1. Verify the proof.
 1. Apply [[ref: JCS]] to the operation object.
-1. Pin the [[ref: seed document]] to IPFS.
+1. Retain the [[ref: seed document]] and distribute it through Hyperswarm for non-local DIDs. Archon also stores content in IPFS for fallback retrieval; storage does not grant the identifier or authorize the operation.
 
 The complete signed agent operation above has canonical CID `bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka`, yielding DID `did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka`.
 
@@ -119,6 +119,6 @@ Upon receiving the operation, the node must:
 
 1. Verify the proof is valid for the specified controller.
 1. Apply [[ref: JCS]] to the operation object.
-1. Pin the seed document to IPFS.
+1. Retain the seed document and distribute it through Hyperswarm for non-local DIDs, with IPFS available for fallback retrieval.
 
 The asset example has DID `did:cid:bagaaierancfl35mj7m4gejwewe2no335bkl527gjlz22dwba5sgybdvevt4q`. Its controller is the agent above. Both creation forms MUST satisfy the Protocol Rules, including identity, registration, size, and authorization checks.

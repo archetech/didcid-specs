@@ -4,7 +4,7 @@
 
 Resolution is the operation of returning a DID Document and its metadata for a given DID. It is distinct from *dereferencing*, which returns a resource identified by a DID URL (see DID URL Dereferencing).
 
-Given a DID and an optional resolution time, the resolver retrieves the associated [[ref: seed document]] from IPFS using the DID suffix as the CID, parsing it as plaintext JSON.
+Given a DID and an optional resolution time, the resolver uses its locally retained operation history and [[ref: seed document]], ordinarily received through Hyperswarm gossip. When creation content is missing locally, it retrieves that content from IPFS using the DID suffix as the CID. Retrieved content is parsed and validated before use; the retrieval channel does not establish authorization.
 
 ### Resolution Options
 
@@ -30,7 +30,7 @@ Resolution computes a predecessor-linked accepted history from available evidenc
 
 Conceptually, a resolver:
 
-1. Retrieves and validates the content-addressed creation operation.
+1. Uses the locally retained content-addressed creation operation, falling back to IPFS if unavailable locally, and validates it.
 2. Incorporates locally trusted registry evidence and unconfirmed hints, validating their targets and receipt shapes.
 3. Reconstructs self-controlled agent histories, selecting valid competing successors; then revalidates asset histories against their agents. Deferred predecessors and changed authority are reconsidered until the accepted state settles.
 4. Applies the requested version/time bound to the predecessor-linked history without skipping excluded predecessors. Hyperswarm and pin use intrinsic proof time; local creation uses operation `created` and local mutations use `proof.created`; chain receipts retain chain time and position.
@@ -91,11 +91,11 @@ This surface always returns confirmed, cryptographically verified state.
 
 ### Fallback and Forwarding
 
-If a node cannot fulfill a resolution request — either because the seed document is unreachable on IPFS or because the DID's specified registry is not supported — the node must forward the request to a trusted node. The forwarding chain is:
+If a node cannot fulfill a resolution request — either because required content remains unavailable after local lookup and fallback retrieval or because the DID's specified registry is not supported — the node must forward the request to a trusted node. The forwarding chain is:
 
 1. **Registry not supported** → forward to a trusted node that monitors the specified registry.
 1. **No trusted node for registry** → forward to a general-purpose fallback node.
-1. **IPFS seed unreachable** → forward to a node with broader IPFS connectivity.
+1. **Required content unavailable** → forward to a peer that may already retain the content through gossip or have access to it through fallback retrieval.
 
 ### Ordinal Key Ordering
 

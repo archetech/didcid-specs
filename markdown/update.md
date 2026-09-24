@@ -84,12 +84,12 @@ For registries such as BTC with non-trivial transaction costs, update operations
 sequenceDiagram
     participant Client
     participant Node
-    participant IPFS
     participant Registry
     
     Client->>Node: POST update operation
     Node->>Node: Verify proof and previd
-    Node->>Registry: Record update
+    Node->>Node: Queue non-local operation for Hyperswarm gossip
+    Node->>Registry: Record update for registry confirmation
     Registry-->>Node: Confirmation
     
     Note right of Registry: Batch or immediate

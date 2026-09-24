@@ -5,9 +5,10 @@ Source for the **`did:cid` DID Method Specification**, a W3C-style standards doc
 
 **Published spec:** <https://archetech.com/didcid-specs/>
 
-`did:cid` is a DID method optimized for fast, virtually costless identity creation: a DID is anchored
-to IPFS at creation and only its *updates* are recorded on a pluggable registry (BTC, ETH,
-hyperswarm, …) named in the DID document itself. The DID suffix is the CIDv1-base32 of the
+`did:cid` is a DID method optimized for fast, virtually costless identity creation: a DID is
+created locally without a central registrar or registry transaction. Archon distributes non-local
+operations through Hyperswarm gossip; IPFS provides fallback content retrieval. The chosen
+registry (BTC, ETH, hyperswarm, …) determines confirmation and ordering of the operation history. The DID suffix is the CIDv1-base32 of the
 JCS-canonicalized seed document, so identifiers are self-certifying and seeds are immutable by
 construction. The method is implemented in the [Archon](https://github.com/archetech/archon)
 project; this repository specifies the protocol and contains no application code.
@@ -83,9 +84,10 @@ Two independent surfaces, and they can drift:
 
 ## Concepts worth knowing before editing
 
-- **Creation is on IPFS; updates are on a registry.** Mutations are expressed only as signed update
-  operations recorded on the registry named in `didDocumentRegistration.registry`. This split is the
-  method's central claim — statements that blur it are bugs.
+- **Creation, distribution, and anchoring are distinct.** A DID is derived locally from its signed
+  creation operation. Hyperswarm gossip distributes non-local operations, including those using
+  chain registries; IPFS provides fallback retrieval when content is missing locally. The registry
+  in the accepted predecessor determines confirmation and ordering, not the distribution channel.
 - **Agent vs. asset.** Agents hold keys and control their own document; assets are
   controlled by exactly one agent. Most rules in `creation.md`, `update.md`, and `resolution.md` fork
   on this distinction.

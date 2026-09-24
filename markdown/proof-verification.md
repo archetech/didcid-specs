@@ -66,9 +66,12 @@ sequenceDiagram
     
     Verifier->>Verifier: Extract signer DID and proof.created
     Verifier->>Resolver: resolveDid(signerDid, versionTime)
-    Resolver->>IPFS: Retrieve seed document
-    IPFS-->>Resolver: Seed document
-    Resolver->>Registry: Get updates up to versionTime
+    Resolver->>Resolver: Read locally retained seed and history from gossip
+    opt Seed missing locally
+        Resolver->>IPFS: Retrieve seed by CID (fallback)
+        IPFS-->>Resolver: Seed document
+    end
+    Resolver->>Registry: Obtain registry evidence for history up to versionTime
     Registry-->>Resolver: Update history
     Resolver->>Resolver: Reconstruct document at versionTime
     Resolver-->>Verifier: DID document with active key

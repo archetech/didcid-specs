@@ -15,7 +15,7 @@ The method does **not** claim security against:
 
 - An adversary who obtains the controller's private key
 - An adversary who controls a majority of the DID's specified [[ref: registry]] (e.g., a blockchain majority attack)
-- A global IPFS outage in which no node retains a copy of the creation operation
+- Loss or unavailability of required operation content from all retained peer copies and fallback retrieval sources
 
 ---
 
@@ -25,7 +25,7 @@ The method does **not** claim security against:
 
 The DID suffix of a `did:cid` DID is the [[ref: CID]] (Content Identifier) of the JSON-canonicalized creation operation. This makes every `did:cid` DID a [[ref: self-certifying identifier]]: a resolver can independently verify that a given creation operation corresponds to a claimed DID by computing its CID and comparing it to the DID suffix. No trusted third party is required to validate the binding between the DID and its initial public key.
 
-Any modification to the creation operation — including the public key, timestamp, or registration metadata — produces a different CID, and therefore a different DID. This property prevents silent substitution of the creation anchor.
+Any modification to the creation operation — including the public key, timestamp, or registration metadata — produces a different CID, and therefore a different DID. This property prevents silent substitution of the creation operation.
 
 ---
 
@@ -128,11 +128,11 @@ Mitigations:
 
 The `did:cid` method separates key custody from network operations into two distinct components with a well-defined trust boundary.
 
-The **[[def: Keymaster, The client-side wallet component that holds private keys, signs operations locally, and submits them to a Gatekeeper node — private keys never leave the Keymaster]]** holds private keys exclusively on the client and signs all operations locally before submission. The **[[def: Gatekeeper, The server-side node component that interfaces with IPFS, registries, and the broader network — it receives only signed operations and never has access to private keys]]** is the network-facing node that submits operations to IPFS and registries and serves DID resolution responses.
+The **[[def: Keymaster, The client-side wallet component that holds private keys, signs operations locally, and submits them to a Gatekeeper node — private keys never leave the Keymaster]]** holds private keys exclusively on the client and signs all operations locally before submission. The **[[def: Gatekeeper, The server-side node component that interfaces with IPFS, registries, and the broader network — it receives only signed operations and never has access to private keys]]** is the network-facing node that retains signed operations, queues their gossip distribution and registry submission, uses IPFS for fallback content retrieval, and serves DID resolution responses.
 
 Key trust properties of this separation:
 
-- **Keymaster users must trust their Gatekeeper** — The Gatekeeper is responsible for faithfully submitting operations to IPFS and registries and for returning accurate resolution results. A compromised Gatekeeper could delay or drop operations, or return stale DID documents. It cannot, however, forge operations, alter signed content, or access private keys.
+- **Keymaster users must trust their Gatekeeper** — The Gatekeeper is responsible for faithfully retaining and distributing operations and submitting them to their registries and for returning accurate resolution results. A compromised Gatekeeper could delay or drop operations, or return stale DID documents. It cannot, however, forge operations, alter signed content, or access private keys.
 - **Gatekeepers are interchangeable** — Because the Keymaster signs all operations locally with keys that never leave the client, a controller can switch to a different Gatekeeper at any time — for better availability, geographic proximity, or greater institutional trust — without any change to their DID or credentials.
 - **Self-sovereign deployment** — Controllers who require maximum trust and control can operate their own Gatekeeper node. This eliminates reliance on any third party while maintaining full compatibility with the network.
 - **SaaS node assurance** — Controllers using a third-party hosted Gatekeeper can do so with the assurance that the node operator cannot access their private keys, cannot sign operations on their behalf, and cannot update or revoke their DID without a valid signature from the controller's Keymaster.
@@ -141,11 +141,11 @@ Key trust properties of this separation:
 
 ### Availability and Denial of Service
 
-**IPFS availability**: DID resolution for a newly created DID requires that its creation operation be retrievable from IPFS. Node operators MUST pin creation operations for all DIDs they are responsible for. Operators SHOULD also arrange for redundant pinning (e.g., via Filecoin or a pinning service) to protect against single-node failure.
+**Content availability**: Resolution requires the creation operation and relevant history, normally retained locally after Hyperswarm distribution. An IPFS outage does not prevent resolution from retained evidence. Operators SHOULD maintain gossip connectivity and durable operation storage; IPFS and optional redundant pinning provide fallback availability when local content is missing. Neither a CID nor a chain anchor guarantees content availability.
 
 **Registry unavailability**: Temporary registry unavailability causes resolution to return the most recently known state rather than failing. This is a graceful degradation, not a hard failure, and is consistent with the method's design.
 
-**Creation spam**: DID creation requires only an IPFS pin and a valid signature; there is no on-chain transaction required at creation time. Node operators SHOULD implement rate limiting on creation endpoints to prevent resource exhaustion from spam creation.
+**Creation spam**: DID creation requires signing and content hashing; there is no on-chain transaction required at creation time. Node operators SHOULD implement rate limiting on creation endpoints to prevent resource exhaustion from spam creation.
 
 **Update queue costs**: For registries with non-trivial transaction costs (e.g., Bitcoin mainnet), nodes may batch update operations. Operators SHOULD implement queue management policies that prevent unbounded accumulation of pending updates.
 
@@ -168,5 +168,5 @@ The following risks remain after the mitigations described in this section:
 | Private key compromise | Low (with secure local storage) | High — attacker can update or revoke the DID | Key rotation; monitor for unauthorized update operations |
 | BIP-39 seed phrase exposure | Low (with physical security) | Critical — unrecoverable if device is also lost | Hardware wallet; physically separate offline backup |
 | Blockchain reorganization | Very low (mainnet, ≥6 confirmations) | Medium — brief resolution inconsistency | Await sufficient confirmations before relying on an update |
-| IPFS content unavailability | Low (with active pinning) | High — resolution failure for affected DIDs | Multi-provider pinning; redundant node infrastructure |
+| Required content unavailable locally, from peers, and through fallback retrieval | Depends on retention and connectivity | Resolution or authorization may remain incomplete | Durable node storage; gossip connectivity; fallback content retention |
 | Trusted node compromise | Low | Medium — stale or incorrect DID data returned | Multi-node resolution; independent registry verification |

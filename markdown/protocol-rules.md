@@ -2,6 +2,10 @@
 
 This section specifies version-1 operation acceptance and evidence selection. It describes the Archon v0.13 implementation; the conformant DID Core result remains the separate presentation defined in DID Resolution and DID URL Dereferencing.
 
+### Distribution and retrieval
+
+Creation is local: signing and content hashing determine the DID without a registrar or registry transaction. Archon distributes non-local operations and batch assets through Hyperswarm gossip, independently of their chosen registry. Gossip receipt alone does not confer chain confirmation. Nodes use retained operation/history data first, with IPFS as fallback retrieval for missing content. IPFS storage and optional auxiliary pinning support availability; they do not create identity or grant authorization. Local-only DIDs are not queued for gossip.
+
 ### Identity and admission
 
 The operation ID is the CIDv1 lowercase-base32 identifier of the complete signed operation, including its proof, serialized with JCS (RFC 8785). Archon uses the JSON multicodec (`0x0200`) and SHA-256 multihash. A creation's DID is derived from that operation and its method prefix. Updates and deletions target their signed `did`. An envelope `did`, when supplied, MUST match this target; a creation's extraneous `did` cannot override content-derived identity. Signature equality alone is not operation identity.
@@ -48,7 +52,7 @@ A chain event MUST contain a valid registry name, an RFC 3339 authoritative bloc
 
 The ordinal is `[height, index, ...registryPosition, opidx]`, with first, second, and last components matching registration. Bundled BTC, ZEC, ETH, and SOL mediators use `[height, index, opidx]`. Additional registry position components participate in lexicographic comparison. Incomplete chain receipts are invalid; there is no metadata-free chain-receipt category. Unanchored ordinals are optional; when present, they are arrays of nonnegative safe integers (possibly empty).
 
-The anchored batch DID commits to its signed create operation and original ordered batch CID list. Mediators MUST retrieve its genesis DID document and use `didDocumentData.batch.ops`, never the mutable current batch asset. Archon's `getGenesis(did)` (`GET /api/v1/did/:did/genesis`) checks content identity and creation structure without resolving publisher authority or changing accepted history. It returns the genesis document set, not the raw operation and not a DID Core resolution result. The original signed operation remains retrievable by CID for provenance; genesis retrieval does not assert signature authorization.
+The anchored batch DID commits to its signed create operation and original ordered batch CID list. Mediators MUST retrieve its genesis DID document and use `didDocumentData.batch.ops`, never the mutable current batch asset. Archon's `getGenesis(did)` (`GET /api/v1/did/:did/genesis`) checks content identity and creation structure without resolving publisher authority or changing accepted history. It returns the genesis document set, not the raw operation and not a DID Core resolution result. Genesis retrieval checks the local operation cache first and falls back to IPFS when it lacks valid content. The original signed operation remains retrievable by CID for provenance; genesis retrieval does not assert signature authorization.
 
 CID batch ingress requires the chain position prefix and complete `height`, `index`, `txid`, `batch` metadata. It derives `opidx` from each CID's **original list index**, including gaps for unavailable entries. Later batch updates cannot change an existing anchor's operation order. Each contained operation undergoes normal authorization.
 
