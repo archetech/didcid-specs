@@ -47,8 +47,7 @@ Most DID methods treat all DIDs identically — every DID is a self-controlled, 
 - Represents entities that take action: users, issuers, verifiers, nodes, and AI agents
 
 **[[ref: asset, Assets]]** are agent-controlled DIDs. An asset:
-- May publish verification methods in an owner-signed document, but those keys do not authorize operations on the asset
-- Is controlled by exactly one [[ref: agent]] DID at any given time (specified in the `controller` field)
+- Is controlled by exactly one [[ref: agent]] DID at any given time (specified in the `controller` field), which authorizes its updates, transfers, and deletion
 - Can be transferred to a new controller via a valid update operation signed by the current controller
 - Holds application data in `didDocumentData`
 - Represents entities that are acted upon: verifiable credentials, schemas, presentations, challenges, and responses

@@ -4,7 +4,7 @@
 
 DIDs are anchored to IPFS prior to any declaration on a registry. This allows DIDs to be created very quickly (less than 10 seconds) and at (virtually) no cost.
 
-The `did:cid` method supports two main types of DID Subject: [[ref: agent]] and [[ref: asset]]. Agents have keys and control assets. Assets are controlled by a single agent (the owner of the asset); owner-published asset keys do not grant independent operation authority. Agents cannot delegate control to another DID. The two types have slightly different creation methods.
+The `did:cid` method supports two main types of DID Subject: [[ref: agent]] and [[ref: asset]]. Agents have keys and control assets. Assets are controlled by a single agent (the owner of the asset), which authorizes their updates, transfers, and deletion. Agents cannot delegate control to another DID. The two types have slightly different creation methods.
 
 ### Create an Agent DID
 
@@ -72,7 +72,7 @@ These examples use public synthetic private keys (32 bytes of `0x4a` for the ini
 
 ### Create an Asset DID
 
-To create an [[ref: asset]] DID, the client must sign and submit a create operation to a node. Unlike an agent, an asset does not possess its own keys — it is controlled by an existing agent.
+To create an [[ref: asset]] DID, the client must sign and submit a create operation to a node. The asset is controlled by an existing agent, which signs its creation.
 
 1. Create an operation object with these fields in any order:
 

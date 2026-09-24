@@ -107,7 +107,7 @@ Service endpoints are optional. Any DID Core-conformant service type may be used
 
 ### Asset DID Document
 
-A resolved [[ref: asset]] DID document identifies its controlling agent. It may contain owner-published verification methods, but operation authority remains with the agent. Its application data is not part of the resolution result — it is dereferenced separately at `/data` (shown below):
+A resolved [[ref: asset]] DID document identifies its controlling agent. That agent authorizes its updates, transfers, and deletion. Its application data is not part of the resolution result — it is dereferenced separately at `/data` (shown below):
 
 ```json
 {

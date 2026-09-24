@@ -86,7 +86,7 @@ Two independent surfaces, and they can drift:
 - **Creation is on IPFS; updates are on a registry.** Mutations are expressed only as signed update
   operations recorded on the registry named in `didDocumentRegistration.registry`. This split is the
   method's central claim — statements that blur it are bugs.
-- **Agent vs. asset.** Agents hold keys and control their own document; assets may publish keys but are
+- **Agent vs. asset.** Agents hold keys and control their own document; assets are
   controlled by exactly one agent. Most rules in `creation.md`, `update.md`, and `resolution.md` fork
   on this distinction.
 - **Resolved documents are computed, not stored.** Resolution replays the operation chain; temporal

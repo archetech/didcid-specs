@@ -7,7 +7,7 @@ The `did:cid` method specification conforms to the requirements specified in [[r
 The `did:cid` method is designed to support a P2P identity layer with secure decentralized [[def: verifiable credential, A cryptographically verifiable claim about a subject, conforming to the W3C Verifiable Credentials Data Model 2.0]]. DIDs created using this method are used for two categories of DID Subject:
 
 - [[def: agent, An entity that possesses cryptographic keys and controls assets — e.g., users, issuers, verifiers, and nodes]]
-- [[def: asset, An entity controlled by one agent whose own published keys do not authorize DID operations — e.g., verifiable credentials, verifiable presentations, schemas, challenges, and responses]]
+- [[def: asset, An entity controlled by one agent that authorizes its updates, transfers, and deletion — e.g., verifiable credentials, verifiable presentations, schemas, challenges, and responses]]
 
 ::: note
 The `did:cid` method is optimized for identity creation that is fast (under 10 seconds) and virtually costless, achieved by anchoring to IPFS rather than requiring an on-chain transaction at creation time. On-chain registration is deferred to the update phase, where it secures the mutation history.

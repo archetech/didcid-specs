@@ -21,7 +21,7 @@ Version 1 retains the maximum operation size of 65,536 UTF-16 code units in comp
 - The predecessor registration determines which registry confirms a successor. A registry migration is confirmed on the old registry; its successors use the new one.
 - A deletion requires a live predecessor and the same authority selection as an update. It clears the DID document to its `id`, clears data, retains registration, marks deactivation, and omits `updated`. No successor may extend a deletion; later evidence can replace the branch containing it.
 
-Verification-method IDs MUST be unique after resolving relative fragments against the document DID: `#key-1` and `<did>#key-1` cannot both occur, even with identical keys. Distinct method names may share key material, and a later version may replace the key under an existing method name. Assets may publish verification methods through owner-signed updates; those methods do not give the asset independent operation authority.
+Verification-method IDs MUST be unique after resolving relative fragments against the document DID: `#key-1` and `<did>#key-1` cannot both occur, even with identical keys. Distinct method names may share key material, and a later version may replace the key under an existing method name.
 
 Current version-1 operation verification selects the named method from `verificationMethod`; it does **not** enforce membership in `capabilityInvocation`. Stricter relationship enforcement is deferred for compatibility. Credential proof-purpose policy is separate.
 
