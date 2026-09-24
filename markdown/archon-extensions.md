@@ -32,7 +32,7 @@ Because they are dereferenced resources, `didDocumentRegistration` and `didDocum
 | `type` | DID subject type: `"agent"` or `"asset"`. Determines the resolution and update rules that apply. |
 | `registry` | The [[ref: registry]] used to record update operations. Only one registry is active at a given time. |
 
-The `registry` field is the binding between a DID and its update ledger. Resolvers use it to determine where to look for update operations. The registry may be changed by the controller via a valid signed update operation — only the most recently confirmed registry is active. A change of registry does not invalidate operations previously recorded on the prior registry; those remain part of the verifiable [[ref: operation chain]].
+The `registry` field is the binding between a DID and its update ledger. Resolvers use it to determine where to look for update operations. The registry may be changed by the controller via a valid signed update operation — the accepted predecessor registration selects the registry for each successor; the old registry confirms a migration, and the new registry confirms its successors. A change of registry does not invalidate operations previously recorded on the prior registry; those remain part of the verifiable [[ref: operation chain]].
 
 ---
 
@@ -46,8 +46,8 @@ Most DID methods treat all DIDs identically — every DID is a self-controlled, 
 - Can act as the controller of one or more [[ref: asset]] DIDs
 - Represents entities that take action: users, issuers, verifiers, nodes, and AI agents
 
-**[[ref: asset, Assets]]** are keyless DIDs. An asset:
-- Has no cryptographic keys of its own
+**[[ref: asset, Assets]]** are agent-controlled DIDs. An asset:
+- May publish verification methods in an owner-signed document, but those keys do not authorize operations on the asset
 - Is controlled by exactly one [[ref: agent]] DID at any given time (specified in the `controller` field)
 - Can be transferred to a new controller via a valid update operation signed by the current controller
 - Holds application data in `didDocumentData`

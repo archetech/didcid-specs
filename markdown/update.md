@@ -27,24 +27,24 @@ It is recommended that the client fetches the current version of the document an
 ```json
 {
     "type": "update",
-    "did": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q",
-    "previd": "bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q",
+    "did": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
+    "previd": "bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
     "doc": {
         "didDocument": {
             "@context": [
                 "https://www.w3.org/ns/did/v1"
             ],
-            "id": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q",
+            "id": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
             "verificationMethod": [
                 {
                     "id": "#key-2",
-                    "controller": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q",
+                    "controller": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
                     "type": "EcdsaSecp256k1VerificationKey2019",
                     "publicKeyJwk": {
                         "kty": "EC",
                         "crv": "secp256k1",
-                        "x": "hrpjLquejw7lOE2RVGr1LQ315k0JI1lwlI4WI3t983k",
-                        "y": "G2_-Agy95QnIFzW5sa9Ik72vDPeqJ0rqqrxWs3CM49o"
+                        "x": "0yuKivfjdnOfFnVwfItXxq2fAQxbqCxg2XO_ekK-V3w",
+                        "y": "IeSj9ICGo6vRMWffZBI0u0faTH9GX0tq7ipG3guSQC0"
                     }
                 }
             ],
@@ -53,24 +53,28 @@ It is recommended that the client fetches the current version of the document an
             ],
             "assertionMethod": [
                 "#key-2"
+            ],
+            "capabilityInvocation": [
+                "#key-2"
             ]
         }
     },
     "proof": {
-        "type": "EcdsaSecp256k1Signature2019",
-        "created": "2026-01-14T19:29:16.117Z",
-        "verificationMethod": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q#key-1",
-        "proofPurpose": "authentication",
-        "proofValue": "LEmM9NGL3b4WBzSUZVy0GOqzZ16KbGydBWfCwRNTmZV-ZRznm9g_09xIszITyB3y2A3DYYYaRp5E_tFegZgBgQ"
+        "type": "DataIntegrityProof",
+        "cryptosuite": "archon-ecdsa-secp256k1-jcs-2026",
+        "created": "2026-09-22T00:00:02.000Z",
+        "verificationMethod": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka#key-1",
+        "proofPurpose": "capabilityInvocation",
+        "proofValue": "vaIoFAAKhfzYRY3hrJNZ4QepScthCTOEREgDN-J1yhBtFoYA5GxkkUXWVSMPQaVFZ4AKY4UMgYFxgEHGM5jH2g"
     }
 }
 ```
 
 Upon receiving the operation, the node must:
 
-1. Verify the proof is valid for the controller of the DID.
-1. Verify the `previd` is identical to the latest version's operation CID.
-1. Record the operation on the DID's specified registry (or forward the request to a trusted node that supports the specified registry).
+1. Select the authorizing document under Operation Authorization and verify the proof.
+1. For direct submission, require the current accepted head as `previd`. Imported competing branches use their selected predecessor under Protocol Rules.
+1. Record the operation on the registry selected by the predecessor's registration (or forward the request to a trusted node that supports the specified registry).
 
 ### Batch vs. Immediate Registration
 
@@ -90,3 +94,5 @@ sequenceDiagram
     
     Note right of Registry: Batch or immediate
 ```
+
+Supplied document components replace the entire component; omitted components remain unchanged. See Protocol Rules for immutable fields, registry migration, and competing updates. The rotation above is signed by the predecessor key `#key-1` and installs `#key-2`.

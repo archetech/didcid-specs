@@ -86,7 +86,7 @@ Two independent surfaces, and they can drift:
 - **Creation is on IPFS; updates are on a registry.** Mutations are expressed only as signed update
   operations recorded on the registry named in `didDocumentRegistration.registry`. This split is the
   method's central claim — statements that blur it are bugs.
-- **Agent vs. asset.** Agents hold keys and control their own document; assets hold no keys and are
+- **Agent vs. asset.** Agents hold keys and control their own document; assets may publish keys but are
   controlled by exactly one agent. Most rules in `creation.md`, `update.md`, and `resolution.md` fork
   on this distinction.
 - **Resolved documents are computed, not stored.** Resolution replays the operation chain; temporal
@@ -105,3 +105,24 @@ Two independent surfaces, and they can drift:
 Ground normative claims about resolver behaviour in the shipped implementation
 ([`archetech/archon`](https://github.com/archetech/archon), `docs/scheme.md`) rather than older
 drafts of this spec. Where the documents disagree, the code and its tests win.
+
+## Protocol baseline and checks
+
+The version-1 reconciliation targets Archon commit `bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc`
+(v0.13 release preparation). `markdown/protocol-rules.md` consolidates acceptance,
+receipt ordering, authorization, and replay rules from `docs/scheme.md`, the
+Gatekeeper implementations, and their signed convergence fixtures. See
+[Archon's protocol documentation](https://github.com/archetech/archon/blob/bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc/docs/scheme.md)
+and [convergence completion report](https://github.com/archetech/archon/blob/bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc/docs/plans/protocol-convergence-completion.md).
+
+The four operation examples are a connected sequence: agent creation, asset
+creation, agent rotation, and asset deletion by the rotated key. Synthetic keys
+are public test material. With a built Archon checkout, validate the examples:
+
+```bash
+node .github/scripts/check-examples.mjs ../archon
+```
+
+This uses only in-memory storage and does not connect to a running node. Rendering
+checks should run in an isolated copy with a temporary output directory, never
+against the checkout that serves the live spec.

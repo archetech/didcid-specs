@@ -1,8 +1,8 @@
 ## DID Revocation
 
-[[def: delete operation, A signed operation that permanently deactivates a DID by removing its controller, making the DID unresolvable for active use]]
+[[def: delete operation, A signed operation that deactivates the accepted branch of a DID by removing its controller, making the DID unresolvable for active use]]
 
-Revoking a DID is a special kind of Update that results in the termination of the DID. Revoked DIDs cannot be updated because they have no controller, therefore they **cannot be recovered** once revoked. Revoked DIDs can be resolved without error, but resolvers will return a result with the `didDocumentMetadata.deactivated` property set to `true`. The `didDocument` is reduced to just its `id`, and the DID's data resource (dereferenced at `/data`) is empty.
+A deletion is terminal on the accepted branch: no update may extend that deletion. Resolution returns `deactivated: true`, an `id`-only DID document, empty data, and retained registration; `updated` is omitted. Later controller or anchor evidence can replace the accepted branch, including its deletion. This is evidence revalidation, not an operation that revives a validly deleted branch.
 
 ### Revocation Flow
 
@@ -20,41 +20,41 @@ To revoke a DID, the client must sign and submit a `delete` operation to a node:
 ```json
 {
     "type": "delete",
-    "did": "did:cid:bagaaiera7vfnrxrmcvo7prrbmdhpvusroii4y2gir252nzk4jv5nxgkzldha",
-    "previd": "bagaaiera7vfnrxrmcvo7prrbmdhpvusroii4y2gir252nzk4jv5nxgkzldha",
+    "did": "did:cid:bagaaierancfl35mj7m4gejwewe2no335bkl527gjlz22dwba5sgybdvevt4q",
+    "previd": "bagaaierancfl35mj7m4gejwewe2no335bkl527gjlz22dwba5sgybdvevt4q",
     "proof": {
-        "type": "EcdsaSecp256k1Signature2019",
-        "created": "2026-01-14T19:34:32.170Z",
-        "verificationMethod": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q#key-1",
-        "proofPurpose": "authentication",
-        "proofValue": "YUTouPmhHDSudPSJ9iU44HdzBYDm7cqmDmanhgDLa4A3MBNiJpbWL2Db4BbzDYQ4NjJCRDWixYZOT2ojzzBHI3c"
+        "type": "DataIntegrityProof",
+        "cryptosuite": "archon-ecdsa-secp256k1-jcs-2026",
+        "created": "2026-09-22T00:00:03.000Z",
+        "verificationMethod": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka#key-2",
+        "proofPurpose": "capabilityInvocation",
+        "proofValue": "dZGXrKfuK7exvAVncxlzblvjsuph0bi1o8gn9cQKsh9kS9p08D4X3Huweu-b6cKbdF8c9P1-Hwx35Iysx0No2w"
     }
 }
 ```
 
 Upon receiving the operation, the node must:
 
-1. Verify the proof is valid for the controller of the DID.
-1. Verify the `previd` is identical to the latest version's operation CID.
-1. Record the operation on the DID's specified registry (or forward the request to a trusted node that supports the specified registry).
+1. Select the authorizing document under Operation Authorization and verify the proof.
+1. For direct submission require the current head as `previd`; import evaluates the selected live predecessor.
+1. Record the operation on the predecessor's registry (or forward the request to a trusted node that supports the specified registry).
 
 ### Post-Revocation Resolution
 
-After revocation is confirmed on the DID's registry, resolving the DID returns a result like this:
+After revocation is confirmed on the DID's registry, resolving the DID returns the following fields (the operation CID is also returned as `versionId`):
 
 ```json
 {
     "didDocument": {
-        "id": "did:cid:bagaaiera7vfnrxrmcvo7prrbmdhpvusroii4y2gir252nzk4jv5nxgkzldha"
+        "id": "did:cid:bagaaierancfl35mj7m4gejwewe2no335bkl527gjlz22dwba5sgybdvevt4q"
     },
     "didResolutionMetadata": {
         "contentType": "application/did+ld+json"
     },
     "didDocumentMetadata": {
+        "created": "2026-09-22T00:00:01Z",
+        "deleted": "2026-09-22T00:00:03Z",
         "deactivated": true,
-        "created": "2026-01-14T19:32:24Z",
-        "deleted": "2026-01-14T19:34:33Z",
-        "versionId": "bagaaierats6ttxvpx2l3tat25ota7z7335akfd2iup5loajsdlqcwismkgpq",
         "versionSequence": "2"
     }
 }
@@ -63,5 +63,4 @@ After revocation is confirmed on the DID's registry, resolving the DID returns a
 The metadata `deactivated` field is set to `true` to conform to the [[ref: DID-CORE]] specification for [DID Document Metadata](https://www.w3.org/TR/did-core/#did-document-metadata). Resolution of a revoked DID does not error: the revoked DID's data resource, dereferenced at `/data`, returns an empty object (`{}`) with HTTP 200.
 
 ::: warning
-Revocation is **irreversible**. Once a DID is deactivated, there is no controller to sign a recovery operation. Ensure all credentials and references have been migrated before revoking a DID.
-:::
+No recovery operation can extend a valid deletion. Preserve credentials and references before deleting a DID; later evidence revalidation is not a user recovery mechanism.

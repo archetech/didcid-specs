@@ -4,7 +4,7 @@
 
 DIDs are anchored to IPFS prior to any declaration on a registry. This allows DIDs to be created very quickly (less than 10 seconds) and at (virtually) no cost.
 
-The `did:cid` method supports two main types of DID Subject: [[ref: agent]] and [[ref: asset]]. Agents have keys and control assets. Assets do not have keys, and are controlled by a single agent (the owner of the asset). The two types have slightly different creation methods.
+The `did:cid` method supports two main types of DID Subject: [[ref: agent]] and [[ref: asset]]. Agents have keys and control assets. Assets are controlled by a single agent (the owner of the asset); owner-published asset keys do not grant independent operation authority. Agents cannot delegate control to another DID. The two types have slightly different creation methods.
 
 ### Create an Agent DID
 
@@ -19,9 +19,9 @@ To create an [[ref: agent]] DID, the client must sign and submit a create operat
    | Field | Required | Description |
    |-------|----------|-------------|
    | `type` | Yes | Must be `"create"` |
-   | `registration.version` | Yes | Version number, e.g. `1` |
+   | `registration.version` | Yes | Must be `1` |
    | `registration.type` | Yes | Must be `"agent"` |
-   | `registration.registry` | Yes | A valid registry identifier, e.g. `"BTC"`, `"hyperswarm"` |
+   | `registration.registry` | Yes | A valid registry identifier, e.g. `"BTC:mainnet"`, `"hyperswarm"` |
    | `publicJwk` | Yes | The public key in JWK format |
    | `created` | Yes | ISO 8601 timestamp |
    | `blockid` | No | Current block ID on registry (if registry is a blockchain) |
@@ -35,7 +35,7 @@ To create an [[ref: agent]] DID, the client must sign and submit a create operat
 ```json
 {
     "type": "create",
-    "created": "2026-01-14T19:29:06.924Z",
+    "created": "2026-09-22T00:00:00.000Z",
     "registration": {
         "version": 1,
         "type": "agent",
@@ -44,15 +44,16 @@ To create an [[ref: agent]] DID, the client must sign and submit a create operat
     "publicJwk": {
         "kty": "EC",
         "crv": "secp256k1",
-        "x": "LRrQabMIkvGVTA2IRk0JdWCpu57MNGm89nugrBZHo24",
-        "y": "KHsWAaidAIGCosDjRYDIk-94793e4xVEL4UwFxjWgB8"
+        "x": "OSd_CMNPrDPDsV5YoWajZol2ZUGeXD8hR3XubkcWcX4",
+        "y": "yBLNwQllxyR5Omgo9b7LmJEfd1pGNiZZqzgqafZ4Qcs"
     },
     "proof": {
-        "type": "EcdsaSecp256k1Signature2019",
-        "created": "2026-01-14T19:29:06.927Z",
+        "type": "DataIntegrityProof",
+        "cryptosuite": "archon-ecdsa-secp256k1-jcs-2026",
+        "created": "2026-09-22T00:00:00.001Z",
         "verificationMethod": "#key-1",
-        "proofPurpose": "authentication",
-        "proofValue": "qNT0EhtojDxOJBh71pddmWnMharQZJxOelW71ehFfuZqrqPls32zSP4bD2CyYNEvAXSJRA-3X5DwR1vHVyTPHw"
+        "proofPurpose": "capabilityInvocation",
+        "proofValue": "esafZoTsLCbrza6GTFuca4sFFHT4S4FJFT9KwBqNhMQXneC5gPgjdNraDML2UXZ0xHf4XScAFm-MZjV_jFsUFw"
     }
 }
 ```
@@ -63,9 +64,9 @@ Upon receiving the operation, the node must:
 1. Apply [[ref: JCS]] to the operation object.
 1. Pin the [[ref: seed document]] to IPFS.
 
-The resulting content address (CID) in standard CID v1 base32 encoding is used as the DID suffix. For example the operation above corresponds to CID `bafkreig6rjxbv2aopv47dgxhnxepqpb4yrxf2nvzrhmhdqthojfdxuxjbe`, yielding the DID:
+The complete signed agent operation above has canonical CID `bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka`, yielding DID `did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka`.
 
-`did:cid:bafkreig6rjxbv2aopv47dgxhnxepqpb4yrxf2nvzrhmhdqthojfdxuxjbe`
+These examples use public synthetic private keys (32 bytes of `0x4a` for the initial agent key and `0x4b` for its later rotation). Never use these keys for an identity.
 
 ---
 
@@ -78,7 +79,7 @@ To create an [[ref: asset]] DID, the client must sign and submit a create operat
    | Field | Required | Description |
    |-------|----------|-------------|
    | `type` | Yes | Must be `"create"` |
-   | `registration.version` | Yes | Version number, e.g. `1` |
+   | `registration.version` | Yes | Must be `1` |
    | `registration.type` | Yes | Must be `"asset"` |
    | `registration.registry` | Yes | A valid registry identifier |
    | `controller` | Yes | The DID of the owner/controller agent |
@@ -95,25 +96,21 @@ To create an [[ref: asset]] DID, the client must sign and submit a create operat
 ```json
 {
     "type": "create",
-    "created": "2026-01-14T19:32:24.354Z",
+    "created": "2026-09-22T00:00:01.000Z",
     "registration": {
         "version": 1,
         "type": "asset",
         "registry": "hyperswarm"
     },
-    "controller": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q",
-    "data": {
-        "group": {
-            "name": "testgroup",
-            "members": []
-        }
-    },
+    "controller": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka",
+    "data": {},
     "proof": {
-        "type": "EcdsaSecp256k1Signature2019",
-        "created": "2026-01-14T19:32:24.375Z",
-        "verificationMethod": "did:cid:bagaaieradidcs4hohalzexldr5mdmbmt553tqq3ifqd56mvhifppvyfdc32q#key-1",
-        "proofPurpose": "authentication",
-        "proofValue": "NGQMBq5venJ2i4F3-Uo0p_rEAlY0zr-YJeTTu7vUlZ0NfyqirIPISGGyy8KU-QrBvsCrfc0fsQm8sh-2BfAzqQ"
+        "type": "DataIntegrityProof",
+        "cryptosuite": "archon-ecdsa-secp256k1-jcs-2026",
+        "created": "2026-09-22T00:00:01.001Z",
+        "verificationMethod": "did:cid:bagaaiera7apdjgpe7jleguoioddew7oqqxn2iqlsowktnbnqksf7bpzuntka#key-1",
+        "proofPurpose": "capabilityInvocation",
+        "proofValue": "9IBMDVoad50nqfV4N-RMHCb4kY-6Y5pg1to7hJc8DFlGGKg53_ikOzGq5wrvfC68oj4QI5dVdQHLajz7S99J_Q"
     }
 }
 ```
@@ -123,3 +120,5 @@ Upon receiving the operation, the node must:
 1. Verify the proof is valid for the specified controller.
 1. Apply [[ref: JCS]] to the operation object.
 1. Pin the seed document to IPFS.
+
+The asset example has DID `did:cid:bagaaierancfl35mj7m4gejwewe2no335bkl527gjlz22dwba5sgybdvevt4q`. Its controller is the agent above. Both creation forms MUST satisfy the Protocol Rules, including identity, registration, size, and authorization checks.

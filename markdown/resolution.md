@@ -26,46 +26,17 @@ If no option is specified, the resolver returns the most recent confirmed versio
 
 ### Resolution Algorithm
 
-```mermaid
-graph TD
-    A["Input: DID, versionTime"] --> B["Extract CID suffix from DID"]
-    B --> C{"Retrieve seed from IPFS?"}
-    C -->|Failure| D["Forward to trusted fallback node"]
-    C -->|Success| E{"Valid seed document?"}
-    E -->|No| F["Return error"]
-    E -->|Yes| G{"Known subject type?"}
-    G -->|No| F
-    G -->|Yes| H{"Registry supported?"}
-    H -->|No| I["Forward to trusted registry node"]
-    H -->|Yes| J["Generate initial document from seed"]
-    J --> K["Retrieve update operations from registry"]
-    K --> L{"For each update lte versionTime"}
-    L -->|Proof valid| M["Apply update to document"]
-    L -->|Invalid| N["Skip update"]
-    M --> O["Return resolved DID document"]
-    N --> O
-```
+Resolution computes a predecessor-linked accepted history from available evidence under Protocol Rules. It MUST NOT select branches by receipt arrival order or merely sort all operations by time. Missing controller history can change authorization when it arrives.
 
-### Pseudocode
+Conceptually, a resolver:
 
-```
-function resolveDid(did, versionTime=now):
-    get suffix from did
-    use suffix as CID to retrieve seed document from IPFS
-    if fail to retrieve the seed document:
-        forward request to a trusted node
-        return
-    look up did's registry in its seed document
-    if did's registry is not supported by this node:
-        forward request to a trusted node
-        return
-    generate initial document from seed
-    retrieve all update operations from did's registry
-    for all updates until versionTime:
-        if proof is valid and update is valid:
-            apply update to DID document
-    return DID document
-```
+1. Retrieves and validates the content-addressed creation operation.
+2. Incorporates locally trusted registry evidence and unconfirmed hints, validating their targets and receipt shapes.
+3. Reconstructs self-controlled agent histories, selecting valid competing successors; then revalidates asset histories against their agents. Deferred predecessors and changed authority are reconsidered until the accepted state settles.
+4. Applies the requested version/time bound to the predecessor-linked history without skipping excluded predecessors. Hyperswarm and pin use intrinsic proof time; local creation uses operation `created` and local mutations use `proof.created`; chain receipts retain chain time and position.
+5. For this specification's conformant HTTP surface, returns the confirmed, verified projection as the DID Core result, exposing data and registration separately by dereferencing.
+
+A cached projection MUST be consistent with replay of the same retained evidence. Unsupported-registry delegation is a resolver service policy; it does not import or confirm peer history.
 
 ### Resolution Result
 
@@ -128,4 +99,6 @@ If a node cannot fulfill a resolution request — either because the seed docume
 
 ### Ordinal Key Ordering
 
-Update records from the registry are ordered by an [[def: ordinal key, A tuple of values used to sort update operations into chronological order, specific to the registry type — e.g., `{block index, transaction index, batch index}` for BTC]]. This ensures deterministic resolution regardless of node synchronization timing.
+[[def: ordinal key, A registry-local chain position tuple ordered lexicographically as height then transaction or instruction index then any additional registry position components then operation index within the anchored batch]]
+
+Ordinals order valid confirmations on the predecessor's expected chain registry. Equal positions of distinct competing operations use canonical CID as a tie-breaker. Unanchored siblings use canonical CID alone. These rules and the required receipt fields are specified in Protocol Rules; ordinals alone do not establish convergence or compare positions across registries.

@@ -39,25 +39,24 @@ All update and delete operations include a `previd` field containing the [[ref: 
 - **Insert** a forged operation without producing a valid signature and a known `previd`
 - **Replay** a prior update operation, as the current `previd` will have advanced beyond the replayed operation's target
 
-Node implementations MUST reject any update or delete operation whose `previd` does not exactly match the CID of the most recently accepted operation for that DID.
+Direct submissions MUST reference the current accepted head before storage or queue writes. Imports may reference an earlier live predecessor to compete with an existing branch; missing predecessors remain deferred. See Protocol Rules.
 
 ---
 
 ### Registry Security and Finality
 
-The integrity of DID update history depends on the [[ref: registry]] specified in the creation operation. Different registries provide different finality and Byzantine fault-tolerance guarantees:
+The integrity of DID update history depends on the [[ref: registry]] selected by each accepted predecessor. Different registries provide different finality and Byzantine fault-tolerance guarantees:
 
 | Registry | Finality Model | Considerations |
 |----------|----------------|----------------|
 | **Bitcoin mainnet** | Probabilistic; ~6 confirmations (~60 min) | Highest economic security; reorganization risk decreases exponentially with block depth |
 | **Bitcoin Signet / Testnet** | Same model; lower economic stake | Suitable for development and testing; not appropriate for production identity |
-| **Hyperswarm** | P2P DHT-based ordering | Faster settlement; weaker Byzantine fault tolerance; suitable for lower-stakes updates |
-| **Ethereum** | Probabilistic PoS finality (~12 s slots) | High economic security; large validator set; EVM-compatible smart contract anchoring |
-| **Zcash** | PoW probabilistic finality | Strong privacy properties; shielded transaction support |
-| **Solana** | PoH / Tower BFT; ~400 ms slots | Very high throughput; low transaction costs; suitable for high-frequency update patterns |
-| **Filecoin** | EC consensus; ~30 s epochs | Storage-native anchoring; aligns with IPFS-based creation layer |
+| **Hyperswarm** | Unanchored gossip; canonical-CID sibling preference | No chain consensus clock; history follows available signed evidence |
+| **Ethereum** | Finalized-block imports (PoS) | High economic security; large validator set; EVM-compatible smart contract anchoring |
+| **Zcash** | PoW probabilistic finality | Bundled mediator uses transparent transactions |
+| **Solana** | Finalized-block imports (Tower BFT) | Very high throughput; low transaction costs; suitable for high-frequency update patterns |
 
-The `registry` field may be changed by the controller via a valid signed update operation — only the most recently confirmed registry is active at any given time. A registry change does not invalidate operations previously recorded on the prior registry; those remain part of the verifiable [[ref: operation chain]] and are still consulted during historical resolution. Resolvers MUST follow the current registry for new operations and MUST consult prior registries when replaying the operation history up to any point before the registry change.
+The `registry` field may be changed by the controller via a valid signed update operation — the predecessor registry confirms the migration and the resulting registry confirms successors. A registry change does not invalidate operations previously recorded on the prior registry; those remain part of the verifiable [[ref: operation chain]] and are still consulted during historical resolution. Resolvers MUST follow the current registry for new operations and MUST consult prior registries when replaying the operation history up to any point before the registry change.
 
 ::: note
 Node operators SHOULD document the registries they support and their trusted peer node policies. Resolvers that do not support a DID's specified registry MUST forward the resolution request to a trusted node rather than returning a partial or stale result.
@@ -69,10 +68,10 @@ Node operators SHOULD document the registries they support and their trusted pee
 
 All operations MUST apply the JSON Canonicalization Scheme (JCS) to the operation object before computing its CID and before signing. Failure to apply canonicalization consistently may cause the same logical operation to produce different CIDs depending on JSON serialization order, leading to resolution failures or operation rejection.
 
-The current specification requires `EcdsaSecp256k1Signature2019` for all proofs. Implementing nodes MUST:
+Operations accept the current `DataIntegrityProof` suite `archon-ecdsa-secp256k1-jcs-2026` and the legacy `EcdsaSecp256k1Signature2019` format. See Proof Verification for the distinct signing payloads. Implementing nodes MUST:
 
 1. Verify the proof signature is cryptographically valid before accepting any create, update, or delete operation.
-2. Verify the signing key was the active controller key at the time the operation was submitted.
+2. Select the signing authority from the operation predecessor or asset controller cutoff under Operation Authorization.
 3. Reject operations with unknown or unsupported `proof.type` values.
 
 ---
@@ -99,20 +98,13 @@ Clients SHOULD:
 
 The `did:cid` method **requires** the `proof.created` field in all signed objects. While the W3C Data Integrity specification treats `proof.created` as optional, `did:cid` mandates it because [[ref: temporal resolution]] requires a creation timestamp to determine which historical key state to use for verification.
 
-Verifiers MUST resolve the signer's DID **at the time the proof was created** (`versionTime = proof.created`) rather than at the current time. Resolving at the current time after a key rotation may produce a different active key, causing valid historical proofs to fail verification.
+Credential verifiers use the proof's claimed `created` time for historical key selection. DID operations instead follow Operation Authorization, including predecessor and chain-position selection. Resolving at the current time after a key rotation may produce a different active key, causing valid historical proofs to fail verification.
 
 ---
 
 ### Revocation Finality
 
-DID revocation (via a `delete` operation) is **permanent and irreversible**. After a revocation is confirmed on the DID's [[ref: registry]]:
-
-- The DID resolves with `didDocumentMetadata.deactivated: true`.
-- The `didDocument` is reduced to just its `id`, and the DID's data resource (dereferenced at `/data`) is empty.
-- No further update or delete operations are accepted for that DID.
-- Possession of the original BIP-39 seed phrase does not enable recovery.
-
-This finality is an intentional security property. It prevents scenarios where an attacker who later recovers an old key attempts to "un-revoke" a DID and take control of its associated credentials and assets.
+Deletion is terminal on its accepted branch. It does not make that branch immune to later evidence revalidation: a preferred sibling or changed controller history can displace a deletion. No operation can extend the deletion itself. Chain confirmation records anchoring, not complete or irrevocable authorization history.
 
 ---
 
@@ -161,7 +153,7 @@ Key trust properties of this separation:
 
 ### Cryptographic Algorithm Agility
 
-The `proof.type` field in all operations specifies the cryptographic algorithm used. The current method version defines `EcdsaSecp256k1Signature2019`. Future versions of the method specification may introduce additional proof types (e.g., Ed25519Signature2020, BLS12-381 for threshold schemes).
+The `proof.type` and, for Data Integrity proofs, `cryptosuite` fields select the proof algorithm. The current operation formats are defined in Proof Verification; legacy acceptance is retained alongside the current Data Integrity suite. Future versions of the method specification may introduce additional proof types (e.g., Ed25519Signature2020, BLS12-381 for threshold schemes).
 
 Existing DIDs using `EcdsaSecp256k1Signature2019` are unaffected by the introduction of new proof types. Nodes MUST continue to support all historically accepted proof types to preserve backward compatibility of [[ref: temporal resolution]] for existing DIDs.
 
