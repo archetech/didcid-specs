@@ -1,6 +1,6 @@
 ## Protocol Rules
 
-This section specifies version-1 operation acceptance and evidence selection. It describes the Archon v0.13 implementation; the conformant DID Core result remains the separate presentation defined in DID Resolution and DID URL Dereferencing.
+This section specifies version-1 operation acceptance and evidence selection, as deployed with Archon v0.13. It is normative: implementations MUST conform to it, and a difference between an implementation and this section, or between two implementations, is a defect. The conformant DID Core result remains the separate presentation defined in DID Resolution and DID URL Dereferencing.
 
 ### Distribution and retrieval
 
@@ -91,4 +91,20 @@ These results apply to the protocol model under its documented assumptions: fini
 
 Signed TypeScript/Rust correspondence tests connect the model to Archon's implementations. They do not constitute a universal proof of the executable code, cryptographic primitives, storage/concurrency behavior, or network delivery. The result does not promise agreement between nodes retaining different evidence; if evidence eventually settles to the same set, modeled reconciliation reaches the same result.
 
+The top-level theorem is `protocol_convergence` in Archon's [`proofs/agent-convergence/ProtocolConvergence.lean`](https://github.com/archetech/archon/blob/8d656d04c178b0834b7f73ed1ac871b6c580b6c6/proofs/agent-convergence/ProtocolConvergence.lean), with the settled-evidence corollary `protocol_eventual_convergence`. It is checked in Archon's CI with only the `propext` and `Quot.sound` axioms and no admitted proofs. A protocol change that affects the rules these properties depend on is not Proposed until the proofs are updated and still check with no admitted steps and no axioms or assumptions beyond those above, unless this section records that the change gives up or narrows the property.
+
 See the [exact theorem claim and assumptions](https://github.com/archetech/archon/blob/bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc/docs/plans/protocol-convergence-theorem.md) and the [completed proof roadmap](https://github.com/archetech/archon/blob/bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc/docs/plans/protocol-convergence-completion.md).
+
+### Change Status
+
+A change to the protocol is made by changing this specification. Each change is recorded here with its status and the evidence that it is backwards compatible.
+
+- **Proposed:** this specification describes the change, and every implementation that accepts operations or resolves DIDs passes signed test vectors for it, published in Archon and referenced here. No implementation releases a change before it is Proposed.
+- **Deployed:** every such implementation has released the change and run it on the live network without diverging.
+- **Compatibility:** the change does not alter the result of any accepted history (its accepted operations, DID document, data, registration, deactivation, and the receipt facts used to authorize them). The evidence is either that this holds by construction, or an audit of retained histories stating which histories it covered. A change for which neither can be given requires an adopted Archonomicon proposal.
+- **Corrections:** correcting an implementation to conform to this specification, or correcting this specification where it misdescribes behaviour that every implementation shares, is not a protocol change and is not recorded here. The exception is a correction that changes the result of an accepted history: it is subject to the compatibility requirement above.
+
+| Change | Status | Compatibility evidence | Test vectors |
+| --- | --- | --- | --- |
+
+No protocol changes have been made since these requirements were adopted on 2026-10-05. The version-1 rules above are the deployed baseline.

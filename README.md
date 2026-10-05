@@ -104,9 +104,14 @@ Two independent surfaces, and they can drift:
 - **Resolution ≠ dereferencing.** Resolution returns the document and its metadata; dereferencing
   returns a resource at a DID URL path (`/data`, `/registration`). Fragments resolve client-side.
 
-Ground normative claims about resolver behaviour in the shipped implementation
-([`archetech/archon`](https://github.com/archetech/archon), `docs/scheme.md`) rather than older
-drafts of this spec. Where the documents disagree, the code and its tests win.
+This specification is normative for the did:cid protocol. Under the
+[Archonomicon](https://github.com/archetech/archonomicon) (rules 42–49), implementations conform to
+it, not the reverse. A difference between the specification and an implementation, or between the
+TypeScript and Rust gatekeepers, is a defect: the implementation is corrected, unless the
+specification is silent or wrong, in which case the specification is corrected first (rule 43).
+The shipped implementation ([`archetech/archon`](https://github.com/archetech/archon), its tests and
+`docs/scheme.md`) remains the best evidence of deployed behaviour. Use it to find where this
+specification is silent or misdescribes shared behaviour, not to override it.
 
 ## Protocol baseline and checks
 
