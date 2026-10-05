@@ -102,6 +102,7 @@ A change to the protocol is made by changing this specification. Each change is 
 - **Proposed:** this specification describes the change, and every implementation that accepts operations or resolves DIDs passes signed test vectors for it, published in Archon and referenced here. No implementation releases a change before it is Proposed.
 - **Deployed:** every such implementation has released the change and run it on the live network without diverging.
 - **Compatibility:** the change does not alter the result of any accepted history (its accepted operations, DID document, data, registration, deactivation, and the receipt facts used to authorize them). The evidence is either that this holds by construction, or an audit of retained histories stating which histories it covered. A change for which neither can be given requires an adopted Archonomicon proposal.
+- **Corrections:** correcting an implementation to conform to this specification, or correcting this specification where it misdescribes behaviour that every implementation shares, is not a protocol change and is not recorded here. The exception is a correction that changes the result of an accepted history: it is subject to the compatibility requirement above.
 
 | Change | Status | Compatibility evidence | Test vectors |
 | --- | --- | --- | --- |
