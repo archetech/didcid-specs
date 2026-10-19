@@ -113,6 +113,8 @@ The shipped implementation ([`archetech/archon`](https://github.com/archetech/ar
 `docs/scheme.md`) remains the best evidence of deployed behaviour. Use it to find where this
 specification is silent or misdescribes shared behaviour, not to override it.
 
+See [GOVERNANCE.md](GOVERNANCE.md) for what the rules require of this specification and who decides.
+
 ## Protocol baseline and checks
 
 The version-1 reconciliation targets Archon commit `bdc57d7f1d1c750e2f545dd465a1c5f10c96b7cc`
