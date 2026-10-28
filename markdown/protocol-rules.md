@@ -29,7 +29,7 @@ Verification-method IDs MUST be unique after resolving relative fragments agains
 
 Current version-1 operation verification selects the named method from `verificationMethod`; it does **not** enforce membership in `capabilityInvocation`. Stricter relationship enforcement is deferred for compatibility. Credential proof-purpose policy is separate.
 
-Optional `validUntil` uses the accepted RFC 3339 string grammar and may change or be omitted in a complete replacement. Expiry drives local garbage collection, not a new per-operation authorization deadline or a signed deletion. Convergence claims require the same retained evidence, not identical local GC timing.
+Optional `validUntil` uses the accepted RFC 3339 string grammar and may change or be omitted in a complete replacement. A replacement MUST NOT add `validUntil` when the predecessor registration has none, so a permanent DID stays permanent. Expiry drives local garbage collection, not a new per-operation authorization deadline or a signed deletion. Convergence claims require the same retained evidence, not identical local GC timing.
 
 ### Operation Authorization
 
@@ -106,5 +106,6 @@ A change to the protocol is made by changing this specification. Each change is 
 
 | Change | Status | Compatibility evidence | Test vectors |
 | --- | --- | --- | --- |
+| A registration replacement cannot add `validUntil` when the predecessor registration has none ([archon#1466](https://github.com/archetech/archon/issues/1466)) | Proposed | Audit on 2026-10-28 of the production database shared by all production nodes: 33,314 accepted DIDs and 65,234 accepted events, including 292 registration replacements, and the candidate journal. No accepted or candidate operation adds `validUntil` to a DID without one. Histories already removed by garbage collection are not retained and were not covered. | [`registration-transition-v1-vectors.json`](https://github.com/archetech/archon/blob/7a3b632bf0f0b5ffa986945b00f2c0e50811a679/tests/gatekeeper/registration-transition-v1-vectors.json): `add_expiry_to_permanent`, `replace_permanent`, `readd_expiry_after_removal` |
 
-No protocol changes have been made since these requirements were adopted on 2026-10-05. The version-1 rules above are the deployed baseline.
+The version-1 rules deployed on 2026-10-05 are the baseline; the table lists changes made since.
