@@ -8,7 +8,7 @@ Dereferencing a `did:cid` DID URL returns a *resource* associated with the DID, 
 
 This method defines two dereferenceable resources, selected by the DID URL path:
 
-- **`/data`** — `did:cid:<cid>/data` dereferences to the DID's data resource: the bare [[ref: didDocumentData]] object. An [[ref: agent, Agent]] DID's data resource holds its agent-level `didDocumentData` (e.g. `manifest`, `backupStore` — see Known Uses under Archon Extensions), or `{}` if none has been set; [[ref: asset]] DIDs return their attached data. A revoked DID's data resource is empty.
+- **`/data`** — `did:cid:<cid>/data` dereferences to the DID's data resource: the bare [[ref: didDocumentData]] value. An [[ref: agent, Agent]] DID's data resource holds its agent-level `didDocumentData` (e.g. `manifest`, `backupStore` — see Known Uses under Archon Extensions), or `{}` if none has been set; [[ref: asset]] DIDs return their attached data. A revoked DID's data resource is empty.
 - **`/registration`** — `did:cid:<cid>/registration` dereferences to the DID's registration/anchoring provenance: the [[ref: didDocumentRegistration]] object (registry, type, validity, version), **plus** the anchoring state `confirmed` and, where the registry anchors to a blockchain, `timestamp`. This is method-specific provenance, not [[ref: DID-CORE]] DID document metadata, which is why `confirmed` and `timestamp` are surfaced here rather than embedded in `didDocumentMetadata`.
 
 ```json

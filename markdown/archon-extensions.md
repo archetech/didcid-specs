@@ -62,9 +62,11 @@ The agent/asset distinction is expressed in `didDocumentRegistration.type`. Reso
 
 ### `didDocumentData`
 
-[[def: didDocumentData, A method-defined resource, dereferenced at the /data DID URL, that provides an open, structured application data layer — a JSON object in which Keymaster features and higher-level applications store state that must be associated with the DID and synchronized across the network]]
+[[def: didDocumentData, A method-defined resource, dereferenced at the /data DID URL, that provides an open, structured application data layer — a JSON value, by convention an object, in which Keymaster features and higher-level applications store state that must be associated with the DID and synchronized across the network]]
 
 [[ref: DID-CORE]] defines a `service` property for attaching typed service endpoint references to a DID document — external URIs pointing to services associated with the DID subject. `didDocumentData` serves a distinct purpose: it is a structured data store for arbitrary JSON state that must be cryptographically bound to the DID itself, versioned alongside it, and resolvable at any point in its history. The `did:cid` method defines `didDocumentData` as an open extension point, dereferenced at `/data`. Its content is not constrained by the method specification — any Keymaster feature or application layer can read and write properties within it using standard DID update operations.
+
+`didDocumentData` may be any JSON value other than `null`. Keymaster features use an object, so that each can reserve a named property within it. An asset's data need not be an object: an array or a string is valid, as are `""`, `0` and `false`.
 
 The general pattern is that each higher-level feature reserves a named property within `didDocumentData`:
 
