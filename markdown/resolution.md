@@ -36,7 +36,7 @@ A `versionId` that is displaced or unconfirmed is `notFound` and not an earlier 
 
 A history that exists and does not verify is `notFound`, as a DID the resolver does not know is. A resolver returns a document only from a history it has verified, and the error does not tell the two cases apart.
 
-A `versionTime` earlier than the DID's creation is not an error. A time bound never excludes a creation (see Protocol Rules), so it selects the creation version, and `created` in the document metadata shows that the document is later than the time asked for.
+A `versionTime` earlier than the DID's creation is not an error. A time bound never excludes a creation (see Protocol Rules), so the result is at least the creation version, and `created` in the document metadata shows that the document is later than the time asked for. Successors remain subject to the bound: one is included only if its own time is at or before `versionTime`.
 
 ---
 
