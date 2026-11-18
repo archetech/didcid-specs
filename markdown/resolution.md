@@ -12,12 +12,27 @@ The `did:cid` method supports the following resolution options per [[ref: DID-CO
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `versionTime` | ISO 8601 datetime | Resolve the DID document as it existed at or before this point in time |
-| `versionSequence` | integer | Resolve at a specific operation sequence number (1-indexed from creation) |
+| `versionTime` | RFC 3339 date-time | Resolve the DID document as it existed at or before this point in time |
+| `versionSequence` | positive integer | Resolve at a specific operation sequence number (1-indexed from creation) |
+| `versionId` | operation CID | Resolve at one operation, named by its canonical CID |
 
 If no option is specified, the resolver returns the most recent confirmed version.
 
-`versionId` is returned as document metadata identifying the selected operation; it is not an input selector on this surface.
+- **`versionTime`** is a date-time with a zone designator, `Z` or a numeric offset, such as `2026-11-18T11:30:00Z`. Fractional seconds are accepted, since `did:cid` timestamps carry them.
+- **`versionSequence`** is a positive integer in decimal digits, no greater than 9007199254740991 (2^53 − 1), the largest integer RFC 7493 treats as exactly representable in JSON. `versionTime` and `versionSequence` may be given together, and both bounds apply.
+- **`versionId`** selects the document as of one operation in the accepted history. The value is the operation's canonical CID, the value returned as `versionId` in document metadata; a retrieval alias the resolver retains for that operation selects the same version. `versionId` is not combined with either other option.
+
+### Resolution Errors
+
+An option that cannot be used is an error. A resolver MUST NOT answer it with the latest version.
+
+| `didResolutionMetadata.error` | When | HTTP status on `/1.0/identifiers` |
+|---|---|---|
+| `invalidDid` | The DID is not a valid `did:cid` identifier. Reported before any error in the options | 400 |
+| `invalidOptions` | `versionTime` is not a date-time in the form above; `versionSequence` is not a positive integer in the range above; `versionId` is empty; or `versionId` is given with `versionTime` or `versionSequence` | 400 |
+| `notFound` | The DID is not known to the resolver; or `versionId` names no operation in the accepted history the resolution walks, because it is unknown, was displaced by a preferred sibling, or is not yet confirmed | 404 |
+
+A `versionId` that is displaced or unconfirmed is `notFound` and not an earlier or later version: the option names one operation, and a resolver that cannot return that operation's version returns none.
 
 ---
 
