@@ -56,13 +56,18 @@ Operation proofs require `created`, a named `verificationMethod`, a supported `p
 
 ### Verification Method Format
 
-The `proof.verificationMethod` field identifies which key was used to create the proof. For DID operations, the reference format depends on the operation type:
+The `proof.verificationMethod` field identifies which key was used to create the proof. For DID operations, the reference a signer emits depends on the operation type:
 
 | Operation | `verificationMethod` Format | Example |
 |-----------|---------------------------|---------|
 | Agent create | Relative reference `#key-1` (DID doesn't exist yet, proof is self-referential) | `#key-1` |
 | Asset create | Full DID reference of the controller | `did:cid:abc123#key-1` |
-| Update / Delete | Full DID reference of the controller | `did:cid:abc123#key-N` |
+| Update / Delete | Full DID reference of the signer: the DID itself for an agent, the owner for an asset | `did:cid:abc123#key-N` |
+
+A verifier is stricter about one of these than the others:
+
+- **Asset create** requires the full form. The DID before the fragment must equal the operation's `controller`; a relative reference is refused.
+- **Update and delete** accept the full form or a relative reference such as `#key-1`. A relative reference resolves against the DID of the document that authorizes the operation: the DID itself for an agent, the owner's for an asset. A reference that names the asset's own DID is refused, since an asset has no keys.
 
 The following sequence illustrates credential verification only.
 

@@ -26,7 +26,7 @@ Version 1 retains the maximum operation size of 65,536 UTF-16 code units in comp
 - The predecessor registration determines which registry confirms a successor. A registry migration is confirmed on the old registry; its successors use the new one.
 - A deletion requires a live predecessor and the same authority selection as an update. It clears the DID document to its `id`, clears data, retains registration, marks deactivation, and omits `updated`. No successor may extend a deletion; later evidence can replace the branch containing it.
 
-Verification-method IDs MUST be unique after resolving relative fragments against the document DID: `#key-1` and `<did>#key-1` cannot both occur, even with identical keys. Distinct method names may share key material, and a later version may replace the key under an existing method name.
+Verification-method IDs MUST be unique after resolving relative fragments against the document DID: `#key-1` and `<did>#key-1` cannot both occur, even with identical keys. Distinct method names may share key material, and a later version may replace the key under an existing method name. The IDs compared are those of the entries of `verificationMethod`. A method embedded in a relationship array, such as `authentication`, is not compared, and cannot sign an operation: verification looks for the named method in `verificationMethod` only.
 
 Current version-1 operation verification selects the named method from `verificationMethod`; it does **not** enforce membership in `capabilityInvocation`. Stricter relationship enforcement is deferred for compatibility. Credential proof-purpose policy is separate.
 
@@ -40,6 +40,7 @@ Agent updates and deletions use the named key in their selected predecessor docu
 
 - Without qualifying chain evidence, select controller history at the operation's `proof.created`.
 - With a chain receipt and a controller whose confirmed prefix is chain-anchored, controller events on that same registry must be strictly before the operation's ordinal. Controller events on other registries are bounded by the operation's block time; ordinals do not compare across registries.
+- Chain-position selection also requires the controller version selected at that position to be registered on a chain. A controller that had moved to Hyperswarm, local or pin by then is selected at the operation's `proof.created`, although its confirmed prefix is anchored.
 - Determine the controller's confirmed prefix using each version's predecessor registry. Wrong-registry receipts and unconfirmed suffixes cannot establish chain anchoring. Pin has no chain clock and cannot itself establish anchoring.
 - Local, Hyperswarm, and pin receipts always use proof-time authorization, even if their envelopes contain registration metadata or ordinals.
 
