@@ -19,7 +19,7 @@ The `did:cid` method supports the following resolution options per [[ref: DID-CO
 If no option is specified, the resolver returns the most recent confirmed version.
 
 - **`versionTime`** is a date-time with a zone designator, `Z` or a numeric offset, such as `2026-11-18T11:30:00Z`. Fractional seconds are accepted, since `did:cid` timestamps carry them.
-- **`versionSequence`** is a positive integer in decimal digits, no greater than 9007199254740991 (2^53 − 1), the largest integer RFC 7493 treats as exactly representable in JSON. `versionTime` and `versionSequence` may be given together, and both bounds apply.
+- **`versionSequence`** is a positive integer in decimal digits, no greater than 9007199254740991 (2^53 − 1), the largest integer RFC 7493 treats as exactly representable in JSON. It names one version. `versionTime` and `versionSequence` may be given together, and the version named must then fall within the time bound.
 - **`versionId`** selects the document as of one operation in the accepted history. The value is the operation's canonical CID, the value returned as `versionId` in document metadata; a retrieval alias the resolver retains for that operation selects the same version. `versionId` is not combined with either other option.
 
 ### Resolution Errors
@@ -30,9 +30,9 @@ An option that cannot be used is an error. A resolver MUST NOT answer it with th
 |---|---|---|
 | `invalidDid` | The DID is not a valid `did:cid` identifier. Reported before any error in the options | 400 |
 | `invalidOptions` | `versionTime` is not a date-time in the form above; `versionSequence` is not a positive integer in the range above; `versionId` is empty; or `versionId` is given with `versionTime` or `versionSequence` | 400 |
-| `notFound` | The DID is not known to the resolver; the DID's history does not verify; or `versionId` names no operation in the accepted history the resolution walks, because it is unknown, was displaced by a preferred sibling, or is not yet confirmed | 404 |
+| `notFound` | The DID is not known to the resolver; the DID's history does not verify; `versionSequence` names a version the history the resolution walks does not reach, because it is past the end, past the confirmed prefix, or outside a `versionTime` given with it; or `versionId` names no operation in the accepted history the resolution walks, because it is unknown, was displaced by a preferred sibling, or is not yet confirmed | 404 |
 
-A `versionId` that is displaced or unconfirmed is `notFound` and not an earlier or later version: the option names one operation, and a resolver that cannot return that operation's version returns none.
+A `versionId` that is displaced or unconfirmed is `notFound` and not an earlier or later version: the option names one operation, and a resolver that cannot return that operation's version returns none. A `versionSequence` is treated the same way: a resolver that does not reach the version it names returns `notFound`, never an earlier version.
 
 A history that exists and does not verify is `notFound`, as a DID the resolver does not know is. A resolver returns a document only from a history it has verified, and the error does not tell the two cases apart.
 
