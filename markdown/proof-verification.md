@@ -41,6 +41,8 @@ Legacy `EcdsaSecp256k1Signature2019` credential proofs remain accepted for compa
 
 Current Archon credentials use Data Integrity proofs, including the method-specific secp256k1 suite and `eddsa-jcs-2022`. A proof set succeeds when at least one supported proof verifies; unsupported suites do not make a valid supported proof fail. Proofs are independently removable, so adding a stronger proof does not disable acceptance under another supported proof.
 
+A Data Integrity proof's configuration carries the secured document's `@context` when the document has one, so the context is signed with it. A Data Integrity proof whose `@context` differs from the document's is invalid; so is one that has a context where the document has none, or lacks one where the document has one. A legacy `EcdsaSecp256k1Signature2019` proof signs the document alone and carries no context, and this rule does not apply to it. DID operation proofs follow their own rules, below.
+
 ### DID operation proofs
 
 DID operations follow Operation Authorization, rather than the generic credential algorithm above. Accepted operation formats are:
@@ -50,7 +52,7 @@ DID operations follow Operation Authorization, rather than the generic credentia
 | `EcdsaSecp256k1Signature2019` | Legacy secp256k1 signature over the operation with `proof` removed; proof configuration is unsigned. |
 | `DataIntegrityProof`, `cryptosuite: archon-ecdsa-secp256k1-jcs-2026` | secp256k1 signature binding both the proof configuration and unsecured operation. |
 
-For the current suite, remove `proofValue` from the proof configuration and include the secured document's `@context` when present. Canonicalize configuration and unsecured document separately with RFC 8785, SHA-256 hash each, concatenate the two 32-byte hashes (configuration first), and SHA-256 hash the concatenation. Sign that digest with secp256k1 ECDSA, encoding compact `r || s` as unpadded base64url `proofValue`. A proof context that disagrees with the document is invalid. Legacy signing hashes the canonical unsecured operation instead. Signatures use the verifier's low-S requirement.
+For the current suite, remove `proofValue` from the proof configuration; what remains is signed as given. Canonicalize configuration and unsecured document separately with RFC 8785, SHA-256 hash each, concatenate the two 32-byte hashes (configuration first), and SHA-256 hash the concatenation. Sign that digest with secp256k1 ECDSA, encoding compact `r || s` as unpadded base64url `proofValue`. Legacy signing hashes the canonical unsecured operation instead. Signatures use the verifier's low-S requirement.
 
 Operation proofs require `created`, a named `verificationMethod`, a supported `proofPurpose`, and a signature. New operations emit `capabilityInvocation`; version 1 also accepts historical `authentication` and `assertionMethod` purposes. These purpose labels do not introduce relationship-membership enforcement. The Archon suite is method-specific, not a claim to a registered W3C cryptosuite name. Ed25519 credential support does not imply Ed25519 DID operation acceptance.
 

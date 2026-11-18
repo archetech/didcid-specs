@@ -30,9 +30,13 @@ An option that cannot be used is an error. A resolver MUST NOT answer it with th
 |---|---|---|
 | `invalidDid` | The DID is not a valid `did:cid` identifier. Reported before any error in the options | 400 |
 | `invalidOptions` | `versionTime` is not a date-time in the form above; `versionSequence` is not a positive integer in the range above; `versionId` is empty; or `versionId` is given with `versionTime` or `versionSequence` | 400 |
-| `notFound` | The DID is not known to the resolver; or `versionId` names no operation in the accepted history the resolution walks, because it is unknown, was displaced by a preferred sibling, or is not yet confirmed | 404 |
+| `notFound` | The DID is not known to the resolver; the DID's history does not verify; or `versionId` names no operation in the accepted history the resolution walks, because it is unknown, was displaced by a preferred sibling, or is not yet confirmed | 404 |
 
 A `versionId` that is displaced or unconfirmed is `notFound` and not an earlier or later version: the option names one operation, and a resolver that cannot return that operation's version returns none.
+
+A history that exists and does not verify is `notFound`, as a DID the resolver does not know is. A resolver returns a document only from a history it has verified, and the error does not tell the two cases apart.
+
+A `versionTime` earlier than the DID's creation is not an error. A time bound never excludes a creation (see Protocol Rules), so the result is at least the creation version, and `created` in the document metadata shows that the document is later than the time asked for. Successors remain subject to the bound: one is included only if its own time is at or before `versionTime`.
 
 ---
 
