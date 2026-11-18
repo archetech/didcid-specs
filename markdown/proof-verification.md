@@ -41,7 +41,7 @@ Legacy `EcdsaSecp256k1Signature2019` credential proofs remain accepted for compa
 
 Current Archon credentials use Data Integrity proofs, including the method-specific secp256k1 suite and `eddsa-jcs-2022`. A proof set succeeds when at least one supported proof verifies; unsupported suites do not make a valid supported proof fail. Proofs are independently removable, so adding a stronger proof does not disable acceptance under another supported proof.
 
-A credential's proof configuration carries the secured document's `@context` when the document has one, so the context is signed with it. A proof whose `@context` disagrees with the document's, or that has one where the document has none or lacks one where the document has one, is invalid. This applies to credentials and other application objects. A DID operation has no `@context`, and its proof configuration is signed as given (see DID operation proofs).
+A Data Integrity proof's configuration carries the secured document's `@context` when the document has one, so the context is signed with it. A Data Integrity proof whose `@context` differs from the document's is invalid; so is one that has a context where the document has none, or lacks one where the document has one. A legacy `EcdsaSecp256k1Signature2019` proof signs the document alone and carries no context, and this rule does not apply to it. DID operation proofs follow their own rules, below.
 
 ### DID operation proofs
 
