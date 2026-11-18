@@ -35,6 +35,14 @@ Conceptually, a resolver:
 
 A cached projection MUST be consistent with replay of the same retained evidence. Local registry support controls submission and queueing, not whether retained evidence can be resolved. The conformant HTTP surface does not delegate resolution to peers.
 
+### Resolving from a Gatekeeper's Export
+
+An implementation can resolve a DID without being a node, by reading one Gatekeeper's export of the DID's events (Archon's `POST /api/v1/dids/export`, which is outside this specification's conformant surface) and verifying the signed operations itself. Three things about an export follow from the rules above:
+
+- **An export is an accepted history.** The exporting Gatekeeper has already selected among competing successors; the candidates it did not accept are retained separately and are not exported. A reader verifies the operations and their predecessor order and does not select again. An export that contains a sibling, an operation that does not verify, or operations out of predecessor order is not an accepted history, and the reader fails.
+- **Its receipts are the exporting Gatekeeper's own record.** A chain receipt in an export is what that Gatekeeper's registry mediator reported. It is not signed and cannot be checked from the export. A reader that counts it as confirmation relies on that Gatekeeper, both for confirmation and for the chain positions that select controller history. A reader that cannot rely on it obtains chain evidence itself.
+- **Batch membership is part of what a receipt asserts.** The mediator checks an anchored operation against the batch DID's genesis document before a receipt is recorded. A reader that relies on the exporting Gatekeeper's receipts relies on that check too and does not repeat it. A reader that obtains chain evidence itself has to make it: an anchor shows that a batch was committed at a position, not that an operation is in the batch. That reader retrieves the batch DID's genesis document and verifies that the operation's canonical CID is in `didDocumentData.batch.ops` at the index the receipt gives as `opidx`, as Protocol Rules requires of a mediator under Chain receipts and anchored batches.
+
 ### Resolution Result
 
 A conformant resolution returns only the three members defined by the [[ref: DID-CORE]] DID Resolution data model:
